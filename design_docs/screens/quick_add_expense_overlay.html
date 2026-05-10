@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Quick-Add Expense | Financial Mastery</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(32, 31, 31, 0.8);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        .keypad-button:active {
+            transform: scale(0.92);
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#06bb63",
+                        "on-tertiary": "#690001",
+                        "on-surface": "#e5e2e1",
+                        "surface-variant": "#353534",
+                        "on-tertiary-container": "#740002",
+                        "tertiary": "#ffb4a9",
+                        "on-error": "#690005",
+                        "on-background": "#e5e2e1",
+                        "on-primary-fixed": "#2a0053",
+                        "surface-container": "#201f1f",
+                        "secondary-fixed": "#6bfe9c",
+                        "background": "#131313",
+                        "on-tertiary-fixed": "#410000",
+                        "primary-fixed-dim": "#dab9ff",
+                        "on-primary": "#460283",
+                        "error-container": "#93000a",
+                        "outline-variant": "#4b4452",
+                        "tertiary-fixed": "#ffdad5",
+                        "surface-container-high": "#2a2a2a",
+                        "primary-fixed": "#eedbff",
+                        "inverse-on-surface": "#313030",
+                        "primary-container": "#bb86fc",
+                        "surface-tint": "#dab9ff",
+                        "on-surface-variant": "#cdc3d4",
+                        "surface-container-highest": "#353534",
+                        "on-tertiary-fixed-variant": "#910807",
+                        "surface": "#131313",
+                        "outline": "#978d9d",
+                        "surface-bright": "#393939",
+                        "primary": "#dab9ff",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-lowest": "#0e0e0e",
+                        "secondary": "#4ae183",
+                        "tertiary-fixed-dim": "#ffb4a9",
+                        "inverse-primary": "#7743b5",
+                        "error": "#ffb4ab",
+                        "tertiary-container": "#ff7462",
+                        "on-primary-fixed-variant": "#5e289b",
+                        "on-secondary-fixed": "#00210c",
+                        "on-primary-container": "#4c0f89",
+                        "inverse-surface": "#e5e2e1",
+                        "secondary-fixed-dim": "#4ae183",
+                        "on-secondary-container": "#00431f",
+                        "on-secondary": "#003919",
+                        "surface-dim": "#131313",
+                        "on-secondary-fixed-variant": "#005228",
+                        "surface-container-low": "#1c1b1b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "sm": "12px",
+                        "lg": "24px",
+                        "base": "8px",
+                        "gutter": "16px",
+                        "container-margin": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Hanken Grotesk"],
+                        "label-md": ["JetBrains Mono"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md relative overflow-hidden">
+<!-- Blurred Background Dashboard Mockup -->
+<main class="w-full h-screen p-gutter filter blur-xl opacity-40 pointer-events-none">
+    <header class="w-full flex justify-between items-center py-md">
+        <h1 class="font-headline-md text-headline-md font-bold text-primary">Financial Mastery</h1>
+        <div class="w-10 h-10 rounded-full bg-surface-container-high"></div>
+    </header>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-md mt-lg">
+        <div class="bg-surface-container h-48 rounded-xl border border-white/5"></div>
+        <div class="bg-surface-container h-48 rounded-xl border border-white/5"></div>
+        <div class="bg-surface-container h-64 rounded-xl border border-white/5 col-span-1 md:col-span-2"></div>
+    </div>
+</main>
+<!-- Overlay Backdrop -->
+<div class="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"></div>
+<!-- Modal Bottom Sheet -->
+<div class="fixed inset-x-0 bottom-0 z-50 flex flex-col glass-panel rounded-t-[32px] border-t border-white/10 max-h-[795px] overflow-y-auto">
+    <!-- Handlebar -->
+    <div class="flex justify-center py-md">
+        <div class="w-12 h-1 bg-surface-variant rounded-full"></div>
+    </div>
+    <div class="px-container-margin pb-xl flex flex-col space-y-lg">
+        <!-- Amount Entry Area -->
+        <div class="flex flex-col items-center justify-center py-xl">
+            <span class="text-on-surface-variant font-label-md text-label-md uppercase tracking-widest mb-xs">Amount</span>
+            <div class="relative flex items-center">
+                <span class="text-primary font-display-lg text-display-lg mr-xs">$</span>
+                <input class="bg-transparent border-none text-on-surface font-display-lg text-display-lg focus:ring-0 w-auto min-w-[120px] text-center" placeholder="0.00" readonly="" type="number"/>
+            </div>
+        </div>
+        <!-- Category Grid -->
+        <div class="grid grid-cols-4 gap-md px-base">
+            <!-- Coffee -->
+            <button class="flex flex-col items-center space-y-xs group">
+                <div class="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center border border-white/5 group-hover:bg-primary-container group-hover:text-on-primary-container transition-all">
+                    <span class="material-symbols-outlined text-2xl" data-icon="coffee">coffee</span>
+                </div>
+                <span class="font-label-md text-[10px] text-on-surface-variant">Coffee</span>
+            </button>
+            <!-- Food -->
+            <button class="flex flex-col items-center space-y-xs group">
+                <div class="w-14 h-14 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center border border-secondary/20 shadow-lg shadow-secondary/10">
+                    <span class="material-symbols-outlined text-2xl" data-icon="restaurant" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+                </div>
+                <span class="font-label-md text-[10px] text-on-surface">Food</span>
+            </button>
+            <!-- Transport -->
+            <button class="flex flex-col items-center space-y-xs group">
+                <div class="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center border border-white/5 group-hover:bg-primary-container transition-all">
+                    <span class="material-symbols-outlined text-2xl" data-icon="directions_car">directions_car</span>
+                </div>
+                <span class="font-label-md text-[10px] text-on-surface-variant">Transport</span>
+            </button>
+            <!-- Shopping -->
+            <button class="flex flex-col items-center space-y-xs group">
+                <div class="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center border border-white/5 group-hover:bg-primary-container transition-all">
+                    <span class="material-symbols-outlined text-2xl" data-icon="shopping_bag">shopping_bag</span>
+                </div>
+                <span class="font-label-md text-[10px] text-on-surface-variant">Shop</span>
+            </button>
+            <!-- Subscriptions -->
+            <button class="flex flex-col items-center space-y-xs group">
+                <div class="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center border border-white/5 group-hover:bg-primary-container transition-all">
+                    <span class="material-symbols-outlined text-2xl" data-icon="subscriptions">subscriptions</span>
+                </div>
+                <span class="font-label-md text-[10px] text-on-surface-variant">Subs</span>
+            </button>
+            <!-- Health -->
+            <button class="flex flex-col items-center space-y-xs group">
+                <div class="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center border border-white/5 group-hover:bg-primary-container transition-all">
+                    <span class="material-symbols-outlined text-2xl" data-icon="medical_services">medical_services</span>
+                </div>
+                <span class="font-label-md text-[10px] text-on-surface-variant">Health</span>
+            </button>
+            <!-- Utilities -->
+            <button class="flex flex-col items-center space-y-xs group">
+                <div class="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center border border-white/5 group-hover:bg-primary-container transition-all">
+                    <span class="material-symbols-outlined text-2xl" data-icon="bolt">bolt</span>
+                </div>
+                <span class="font-label-md text-[10px] text-on-surface-variant">Utility</span>
+            </button>
+            <!-- Other -->
+            <button class="flex flex-col items-center space-y-xs group">
+                <div class="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center border border-white/5 group-hover:bg-primary-container transition-all">
+                    <span class="material-symbols-outlined text-2xl" data-icon="more_horiz">more_horiz</span>
+                </div>
+                <span class="font-label-md text-[10px] text-on-surface-variant">Other</span>
+            </button>
+        </div>
+        <!-- Numeric Keypad -->
+        <div class="grid grid-cols-3 gap-y-sm gap-x-lg py-md">
+            <button class="keypad-button h-16 flex items-center justify-center font-headline-md text-headline-md text-on-surface hover:bg-white/5 rounded-xl transition-all">1</button>
+            <button class="keypad-button h-16 flex items-center justify-center font-headline-md text-headline-md text-on-surface hover:bg-white/5 rounded-xl transition-all">2</button>
+            <button class="keypad-button h-16 flex items-center justify-center font-headline-md text-headline-md text-on-surface hover:bg-white/5 rounded-xl transition-all">3</button>
+            <button class="keypad-button h-16 flex items-center justify-center font-headline-md text-headline-md text-on-surface hover:bg-white/5 rounded-xl transition-all">4</button>
+            <button class="keypad-button h-16 flex items-center justify-center font-headline-md text-headline-md text-on-surface hover:bg-white/5 rounded-xl transition-all">5</button>
+            <button class="keypad-button h-16 flex items-center justify-center font-headline-md text-headline-md text-on-surface hover:bg-white/5 rounded-xl transition-all">6</button>
+            <button class="keypad-button h-16 flex items-center justify-center font-headline-md text-headline-md text-on-surface hover:bg-white/5 rounded-xl transition-all">7</button>
+            <button class="keypad-button h-16 flex items-center justify-center font-headline-md text-headline-md text-on-surface hover:bg-white/5 rounded-xl transition-all">8</button>
+            <button class="keypad-button h-16 flex items-center justify-center font-headline-md text-headline-md text-on-surface hover:bg-white/5 rounded-xl transition-all">9</button>
+            <button class="keypad-button h-16 flex items-center justify-center font-headline-md text-headline-md text-on-surface hover:bg-white/5 rounded-xl transition-all">.</button>
+            <button class="keypad-button h-16 flex items-center justify-center font-headline-md text-headline-md text-on-surface hover:bg-white/5 rounded-xl transition-all">0</button>
+            <button class="keypad-button h-16 flex items-center justify-center font-headline-md text-headline-md text-on-surface-variant hover:bg-white/5 rounded-xl transition-all">
+                <span class="material-symbols-outlined" data-icon="backspace">backspace</span>
+            </button>
+        </div>
+        <!-- Expandable Details Trigger -->
+        <div class="flex flex-col space-y-md">
+            <button class="flex items-center space-x-base text-primary font-label-md text-label-md py-base hover:opacity-80 transition-opacity">
+                <span class="material-symbols-outlined text-sm" data-icon="expand_more">expand_more</span>
+                <span>Add Details</span>
+            </button>
+            <!-- Hidden Section (Example shown as visible for UI display) -->
+            <div class="flex flex-col space-y-md animate-fade-in">
+                <div class="flex space-x-sm overflow-x-auto pb-xs">
+<span class="bg-primary-container text-on-primary-container px-md py-xs rounded-full font-label-md text-label-md flex items-center space-x-xs whitespace-nowrap">
+<span class="material-symbols-outlined text-sm" data-icon="credit_card">credit_card</span>
+<span>Card</span>
+</span>
+                    <span class="bg-surface-container-high text-on-surface-variant px-md py-xs rounded-full font-label-md text-label-md flex items-center space-x-xs border border-white/5 whitespace-nowrap">
+<span class="material-symbols-outlined text-sm" data-icon="payments">payments</span>
+<span>Cash</span>
+</span>
+                    <span class="bg-surface-container-high text-on-surface-variant px-md py-xs rounded-full font-label-md text-label-md flex items-center space-x-xs border border-white/5 whitespace-nowrap">
+<span class="material-symbols-outlined text-sm" data-icon="currency_bitcoin">currency_bitcoin</span>
+<span>Crypto</span>
+</span>
+                </div>
+                <div class="w-full">
+                    <textarea class="w-full bg-surface-container-lowest border-none rounded-xl text-body-md text-on-surface placeholder:text-on-surface-variant focus:ring-1 focus:ring-primary h-16 resize-none p-md" placeholder="Add a note..."></textarea>
+                </div>
+            </div>
+        </div>
+        <!-- Primary Action -->
+        <div class="pt-md">
+            <button class="w-full bg-primary text-on-primary font-title-lg text-title-lg py-md rounded-full shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center space-x-base">
+                <span>Save Expense</span>
+                <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Hidden standard components for structure as per system rules -->
+<div class="hidden md:flex fixed top-0 w-full justify-between items-center px-gutter py-md bg-background dark:bg-background z-[60]">
+    <div class="font-headline-md text-headline-md font-bold text-primary">Financial Mastery</div>
+    <div class="flex space-x-lg items-center">
+        <span class="text-on-surface-variant font-label-md">Dashboard</span>
+        <span class="text-on-surface-variant font-label-md">Income</span>
+        <span class="text-on-surface-variant font-label-md">Budget</span>
+        <span class="text-primary font-label-md border-b-2 border-primary pb-1">Expenses</span>
+        <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+        <div class="w-8 h-8 rounded-full bg-surface-container-high"></div>
+    </div>
+</div>
+</body></html>
