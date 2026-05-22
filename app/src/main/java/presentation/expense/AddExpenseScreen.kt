@@ -5,7 +5,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import data.model.ExpenseType
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
@@ -20,6 +22,7 @@ fun AddExpenseScreen(
     var amount by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf(data.model.ExpenseCategory.OTHER) }
+    var expenseType by remember { mutableStateOf(ExpenseType.DISCRETIONARY) }
     val addState by viewModel.addExpenseState.collectAsState()
 
     LaunchedEffect(addState) {
@@ -66,6 +69,21 @@ fun AddExpenseScreen(
                 selectedCategory = selectedCategory,
                 onCategorySelected = { selectedCategory = it }
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Committed Expense (e.g., rent, bills)")
+                Spacer(modifier = Modifier.weight(1f))
+                Switch(
+                    checked = expenseType == ExpenseType.COMMITTED,
+                    onCheckedChange = {
+                        expenseType = if (it) ExpenseType.COMMITTED else ExpenseType.DISCRETIONARY
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
         }
