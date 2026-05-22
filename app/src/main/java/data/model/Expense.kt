@@ -5,7 +5,7 @@ data class Expense(
     val amount: Double = 0.0,
     val description: String = "",
     val date: Long = System.currentTimeMillis(),
-    val userId: String = ""
+    val userId: String = "",
     val category: ExpenseCategory = ExpenseCategory.OTHER
 )
 

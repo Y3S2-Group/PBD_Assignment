@@ -3,6 +3,8 @@ package presentation.expense
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import data.model.Expense
+import data.model.ExpenseCategory
 import domain.repository.ExpenseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,15 +40,15 @@ class ExpenseViewModel @Inject constructor(
     private val _addExpenseState = MutableStateFlow<AddExpenseState>(AddExpenseState.Idle)
     val addExpenseState: StateFlow<AddExpenseState> = _addExpenseState.asStateFlow()
 
-    fun addExpense(amount: Double, description: String, category: data.model.ExpenseCategory) {
+    fun addExpense(amount: Double, description: String, category: ExpenseCategory) {
         viewModelScope.launch {
             _addExpenseState.value = AddExpenseState.Loading
             authRepository.currentUser?.let { user ->
-                val expense = data.model.Expense(
+                val expense = Expense(
                     amount = amount,
                     description = description,
-                    userId = user.uid,
-                    category = category
+                    category = category,
+                    userId = user.uid
                 )
                 repository.addExpense(expense)
                     .onSuccess {
