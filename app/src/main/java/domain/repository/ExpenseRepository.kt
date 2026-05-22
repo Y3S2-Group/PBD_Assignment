@@ -17,4 +17,9 @@ interface ExpenseRepository {
         startDate: Long,
         endDate: Long
     ): Map<ExpenseCategory, Double>
+    suspend fun getExpenses(
+        userId: String,
+        startDate: Long,
+        endDate: Long
+    ): List<Expense>
 }

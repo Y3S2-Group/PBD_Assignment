@@ -85,4 +85,23 @@ class ExpenseRepositoryImpl @Inject constructor(
             emptyMap()
         }
     }
+
+    override suspend fun getExpenses(
+        userId: String,
+        startDate: Long,
+        endDate: Long
+    ): List<Expense> {
+        return try {
+            val snapshot = firestore.collection("expenses")
+                .whereEqualTo("userId", userId)
+                .whereGreaterThanOrEqualTo("date", startDate)
+                .whereLessThanOrEqualTo("date", endDate)
+                .get()
+                .await()
+
+            snapshot.documents.mapNotNull { it.toObject(Expense::class.java) }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
 }
