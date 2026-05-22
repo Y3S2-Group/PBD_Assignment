@@ -19,6 +19,7 @@ fun AddExpenseScreen(
 ) {
     var amount by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf(data.model.ExpenseCategory.OTHER) }
     val addState by viewModel.addExpenseState.collectAsState()
 
     LaunchedEffect(addState) {
@@ -60,8 +61,13 @@ fun AddExpenseScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+            presentation.expense.components.CategorySelector(
+                selectedCategory = selectedCategory,
+                onCategorySelected = { selectedCategory = it }
+            )
+
             Spacer(modifier = Modifier.height(24.dp))
-            // Add button next commit
         }
     }
 }

@@ -38,14 +38,15 @@ class ExpenseViewModel @Inject constructor(
     private val _addExpenseState = MutableStateFlow<AddExpenseState>(AddExpenseState.Idle)
     val addExpenseState: StateFlow<AddExpenseState> = _addExpenseState.asStateFlow()
 
-    fun addExpense(amount: Double, description: String) {
+    fun addExpense(amount: Double, description: String, category: data.model.ExpenseCategory) {
         viewModelScope.launch {
             _addExpenseState.value = AddExpenseState.Loading
             authRepository.currentUser?.let { user ->
                 val expense = data.model.Expense(
                     amount = amount,
                     description = description,
-                    userId = user.uid
+                    userId = user.uid,
+                    category = category
                 )
                 repository.addExpense(expense)
                     .onSuccess {
