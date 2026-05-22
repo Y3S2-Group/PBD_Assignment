@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import data.model.Expense
 import data.model.ExpenseCategory
+import data.model.ExpenseType
 import domain.repository.ExpenseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -49,10 +50,19 @@ class ExpenseViewModel @Inject constructor(
                 val (start, end) = getCurrentMonthRange()
                 val total = repository.getTotalExpenses(user.uid, start, end)
                 val byCategory = repository.getExpensesByCategory(user.uid, start, end)
+                val allExpenses = repository.getExpenses(user.uid, start, end)
+                val discretionary = allExpenses
+                    .filter { it.type == ExpenseType.DISCRETIONARY }
+                    .sumOf { it.amount }
+                val committed = allExpenses
+                    .filter { it.type == ExpenseType.COMMITTED }
+                    .sumOf { it.amount }
 
                 _summary.value = ExpenseSummary(
                     total = total,
-                    byCategory = byCategory
+                    byCategory = byCategory,
+                    discretionaryTotal = discretionary,
+                    committedTotal = committed
                 )
             }
         }
