@@ -6,8 +6,14 @@ data class Expense(
     val description: String = "",
     val date: Long = System.currentTimeMillis(),
     val userId: String = "",
-    val category: ExpenseCategory = ExpenseCategory.OTHER
+    val category: ExpenseCategory = ExpenseCategory.OTHER,
+    val type: ExpenseType = ExpenseType.DISCRETIONARY
 )
+
+enum class ExpenseType {
+    DISCRETIONARY,
+    COMMITTED
+}
 
 enum class ExpenseCategory {
     FOOD, TRANSPORT, UTILITIES, ENTERTAINMENT,
