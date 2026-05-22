@@ -9,6 +9,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import data.model.Expense
 import utils.getCategoryIcon
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun ExpenseListItem(
@@ -47,6 +50,16 @@ fun ExpenseListItem(
                     style = MaterialTheme.typography.bodySmall
                 )
             }
+            Text(
+                text = formatDate(expense.date),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
+}
+
+private fun formatDate(timestamp: Long): String {
+    val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    return sdf.format(Date(timestamp))
 }
