@@ -6,4 +6,10 @@ data class Expense(
     val description: String = "",
     val date: Long = System.currentTimeMillis(),
     val userId: String = ""
+    val category: ExpenseCategory = ExpenseCategory.OTHER
 )
+
+enum class ExpenseCategory {
+    FOOD, TRANSPORT, UTILITIES, ENTERTAINMENT,
+    SHOPPING, HEALTH, RENT, OTHER
+}
