@@ -35,4 +35,26 @@ class ExpenseViewModel @Inject constructor(
             }
         }
     }
+    private val _addExpenseState = MutableStateFlow<AddExpenseState>(AddExpenseState.Idle)
+    val addExpenseState: StateFlow<AddExpenseState> = _addExpenseState.asStateFlow()
+
+    fun addExpense(amount: Double, description: String) {
+        viewModelScope.launch {
+            _addExpenseState.value = AddExpenseState.Loading
+            authRepository.currentUser?.let { user ->
+                val expense = data.model.Expense(
+                    amount = amount,
+                    description = description,
+                    userId = user.uid
+                )
+                repository.addExpense(expense)
+                    .onSuccess {
+                        _addExpenseState.value = AddExpenseState.Success
+                    }
+                    .onFailure { error ->
+                        _addExpenseState.value = AddExpenseState.Error(error.message ?: "Unknown error")
+                    }
+            }
+        }
+    }
 }
