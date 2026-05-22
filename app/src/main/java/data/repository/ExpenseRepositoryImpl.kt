@@ -78,7 +78,9 @@ class ExpenseRepositoryImpl @Inject constructor(
             snapshot.documents
                 .mapNotNull { it.toObject(Expense::class.java) }
                 .groupBy { it.category }
-                .mapValues { (_, expenses) -> expenses.sumOf { it.amount } }
+                .mapValues { (_, expenses) ->
+                    expenses.sumOf { it.amount }
+                }
         } catch (e: Exception) {
             emptyMap()
         }

@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
 
 // Placeholder for AuthRepository and ExpenseUiState
@@ -24,8 +25,12 @@ class ExpenseViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<ExpenseUiState>(ExpenseUiState.Loading)
     val uiState: StateFlow<ExpenseUiState> = _uiState.asStateFlow()
 
+    private val _summary = MutableStateFlow(ExpenseSummary())
+    val summary: StateFlow<ExpenseSummary> = _summary.asStateFlow()
+
     init {
         loadExpenses()
+        loadMonthlySummary()
     }
 
     private fun loadExpenses() {
@@ -36,6 +41,36 @@ class ExpenseViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun loadMonthlySummary() {
+        viewModelScope.launch {
+            authRepository.currentUser?.let { user ->
+                val (start, end) = getCurrentMonthRange()
+                val total = repository.getTotalExpenses(user.uid, start, end)
+                val byCategory = repository.getExpensesByCategory(user.uid, start, end)
+
+                _summary.value = ExpenseSummary(
+                    total = total,
+                    byCategory = byCategory
+                )
+            }
+        }
+    }
+
+    private fun getCurrentMonthRange(): Pair<Long, Long> {
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.DAY_OF_MONTH, 1)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val start = calendar.timeInMillis
+
+        calendar.add(Calendar.MONTH, 1)
+        calendar.add(Calendar.MILLISECOND, -1)
+        val end = calendar.timeInMillis
+        return start to end
     }
     private val _addExpenseState = MutableStateFlow<AddExpenseState>(AddExpenseState.Idle)
     val addExpenseState: StateFlow<AddExpenseState> = _addExpenseState.asStateFlow()
@@ -53,6 +88,7 @@ class ExpenseViewModel @Inject constructor(
                 repository.addExpense(expense)
                     .onSuccess {
                         _addExpenseState.value = AddExpenseState.Success
+                        loadMonthlySummary()
                     }
                     .onFailure { error ->
                         _addExpenseState.value = AddExpenseState.Error(error.message ?: "Unknown error")
