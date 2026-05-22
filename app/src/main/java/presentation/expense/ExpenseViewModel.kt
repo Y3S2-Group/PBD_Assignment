@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.Calendar
+import utils.getCurrentMonthRange
 import javax.inject.Inject
 
 // Placeholder for AuthRepository and ExpenseUiState
@@ -58,20 +58,6 @@ class ExpenseViewModel @Inject constructor(
         }
     }
 
-    private fun getCurrentMonthRange(): Pair<Long, Long> {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.DAY_OF_MONTH, 1)
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        val start = calendar.timeInMillis
-
-        calendar.add(Calendar.MONTH, 1)
-        calendar.add(Calendar.MILLISECOND, -1)
-        val end = calendar.timeInMillis
-        return start to end
-    }
     private val _addExpenseState = MutableStateFlow<AddExpenseState>(AddExpenseState.Idle)
     val addExpenseState: StateFlow<AddExpenseState> = _addExpenseState.asStateFlow()
 
