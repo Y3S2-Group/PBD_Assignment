@@ -1,0 +1,23 @@
+package com.example.financeapp.data.local
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import com.example.financeapp.domain.model.Expense
+
+@Dao
+interface ExpenseDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(expense: Expense)
+
+    @Query("SELECT * FROM expenses WHERE id = :id LIMIT 1")
+    suspend fun getById(id: String): Expense?
+
+    @Query("SELECT * FROM expenses WHERE spendingType = :spendingType")
+    suspend fun getBySpendingType(spendingType: String): List<Expense>
+
+    @Query("SELECT SUM(amountLkr) FROM expenses WHERE timestamp BETWEEN :startInclusive AND :endInclusive")
+    suspend fun sumAmountLkrBetween(startInclusive: Long, endInclusive: Long): Double?
+}
+
