@@ -8,6 +8,10 @@ import javax.inject.Inject
 class IncomeRepositoryImpl @Inject constructor(
     private val incomeDao: IncomeDao
 ) : IncomeRepository {
+    override suspend fun insertIncome(income: Income) {
+        incomeDao.insert(income)
+    }
+
     override suspend fun getAllIncomes(): List<Income> = incomeDao.getAll()
 
     override suspend fun getBySourceType(sourceType: String): List<Income> =
