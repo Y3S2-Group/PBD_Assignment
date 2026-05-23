@@ -7,6 +7,7 @@ import com.example.financeapp.data.local.IncomeDatabase
 import com.example.financeapp.data.local.ExpenseDao
 import com.example.financeapp.data.local.BudgetDao
 import com.example.financeapp.data.local.GoalDao
+import com.example.financeapp.data.local.SavingsDepositDao
 import com.example.financeapp.data.repository.IncomeRepositoryImpl
 import com.example.financeapp.domain.repository.IncomeRepository
 import dagger.Binds
@@ -50,5 +51,9 @@ abstract class IncomeModule {
 
         @Provides
         fun provideBudgetDao(database: IncomeDatabase): BudgetDao = database.budgetDao()
+
+        @Provides
+        fun provideSavingsDepositDao(database: IncomeDatabase): SavingsDepositDao =
+            database.savingsDepositDao()
     }
 }
