@@ -3,7 +3,7 @@ package com.example.financeapp.data.local
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import com.example.financeapp.domain.model.Budget
+import com.example.financeapp.domain.model.BudgetCategory
 import com.example.financeapp.domain.model.Goal
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -43,7 +43,8 @@ class BudgetDaoTest {
             name = "MacBook Pro M4",
             targetAmount = 490000.0,
             currentSavings = 0.0,
-            deadlineTimestamp = 1_750_000_000_000
+            deadlineTimestamp = 1_750_000_000_000,
+            createdAt = 1_700_000_000_000
         )
 
         goalDao.insert(goal)
@@ -60,7 +61,8 @@ class BudgetDaoTest {
             name = "MacBook Pro M4",
             targetAmount = 490000.0,
             currentSavings = 10000.0,
-            deadlineTimestamp = 1_750_000_000_000
+            deadlineTimestamp = 1_750_000_000_000,
+            createdAt = 1_700_000_000_000
         )
 
         goalDao.insert(goal)
@@ -73,18 +75,18 @@ class BudgetDaoTest {
 
     @Test
     fun insertAndRetrieveBudget() = kotlinx.coroutines.runBlocking {
-        val budget = Budget(
-            id = "budget_1",
-            monthYear = "2026-05",
-            categoryAllocationsJson = "{\"Food\":12000,\"Transport\":8000}",
-            expectedIncome = 250000.0
+        val budget = BudgetCategory(
+            id = "budget_food_2026_05",
+            categoryName = "Food",
+            allocatedAmount = 12000.0,
+            monthYear = "2026-05"
         )
 
         budgetDao.insert(budget)
         val retrieved = budgetDao.getByMonthYear("2026-05")
 
         assertNotNull(retrieved)
-        assertEquals(budget, retrieved)
+        assertEquals(1, retrieved.size)
+        assertEquals(budget, retrieved.first())
     }
 }
-

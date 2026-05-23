@@ -1,7 +1,7 @@
 package com.example.financeapp.di
 
-import com.example.financeapp.data.repository.BudgetGoalRepositoryImpl
-import com.example.financeapp.domain.repository.BudgetGoalRepository
+import com.example.financeapp.data.repository.BudgetRepositoryImpl
+import com.example.financeapp.domain.repository.BudgetRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -13,6 +13,5 @@ import javax.inject.Singleton
 abstract class BudgetGoalModule {
     @Binds
     @Singleton
-    abstract fun bindBudgetGoalRepository(impl: BudgetGoalRepositoryImpl): BudgetGoalRepository
+    abstract fun bindBudgetRepository(impl: BudgetRepositoryImpl): BudgetRepository
 }
-

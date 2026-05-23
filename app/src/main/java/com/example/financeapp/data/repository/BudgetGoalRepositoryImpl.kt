@@ -2,7 +2,7 @@ package com.example.financeapp.data.repository
 
 import com.example.financeapp.data.local.BudgetDao
 import com.example.financeapp.data.local.GoalDao
-import com.example.financeapp.domain.model.Budget
+import com.example.financeapp.domain.model.BudgetCategory
 import com.example.financeapp.domain.model.Goal
 import com.example.financeapp.domain.repository.BudgetGoalRepository
 import javax.inject.Inject
@@ -29,14 +29,13 @@ class BudgetGoalRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun insertBudget(budget: Budget) {
+    override suspend fun insertBudget(category: BudgetCategory) {
         withContext(Dispatchers.IO) {
-            budgetDao.insert(budget)
+            budgetDao.insert(category)
         }
     }
 
-    override suspend fun getBudgetByMonth(monthYear: String): Budget? = withContext(Dispatchers.IO) {
+    override suspend fun getBudgetByMonth(monthYear: String): List<BudgetCategory> = withContext(Dispatchers.IO) {
         budgetDao.getByMonthYear(monthYear)
     }
 }
-

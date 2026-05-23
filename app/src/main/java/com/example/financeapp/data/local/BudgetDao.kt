@@ -4,14 +4,13 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.financeapp.domain.model.Budget
+import com.example.financeapp.domain.model.BudgetCategory
 
 @Dao
 interface BudgetDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(budget: Budget)
+    suspend fun insert(category: BudgetCategory)
 
-    @Query("SELECT * FROM budgets WHERE monthYear = :monthYear LIMIT 1")
-    suspend fun getByMonthYear(monthYear: String): Budget?
+    @Query("SELECT * FROM budget_categories WHERE monthYear = :monthYear")
+    suspend fun getByMonthYear(monthYear: String): List<BudgetCategory>
 }
-
