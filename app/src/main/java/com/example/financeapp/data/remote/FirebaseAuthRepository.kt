@@ -4,6 +4,7 @@ import com.example.financeapp.domain.model.User
 import com.example.financeapp.domain.repository.IAuthRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -72,6 +73,23 @@ class FirebaseAuthRepository @Inject constructor(
                 continuation.resume(Result.failure(e))
             }
     }
+
+    override suspend fun signInWithGoogle(idToken: String): Result<User> =
+        suspendCancellableCoroutine { continuation ->
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            firebaseAuth.signInWithCredential(credential)
+                .addOnSuccessListener { result ->
+                    val user = result.user?.toDomain()
+                    if (user != null) {
+                        continuation.resume(Result.success(user))
+                    } else {
+                        continuation.resume(Result.failure(Exception("Google sign-in failed")))
+                    }
+                }
+                .addOnFailureListener { e ->
+                    continuation.resume(Result.failure(e))
+                }
+        }
 
     override suspend fun signOut() {
         firebaseAuth.signOut()
