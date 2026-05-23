@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Vault | Welcome to Lumina Finance</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&amp;family=Inter:wght@400;600&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#6e528f",
+                        "tertiary-container": "#ffb4a9",
+                        "primary-fixed": "#eedbff",
+                        "inverse-surface": "#e5e2e1",
+                        "error-container": "rgba(147, 0, 10, 0.3)",
+                        "primary": "#eedcff",
+                        "surface-container-high": "#2a2a2a",
+                        "border-glass": "rgba(255, 255, 255, 0.05)",
+                        "inverse-on-surface": "#313030",
+                        "on-primary-container": "#614683",
+                        "surface": "#131313",
+                        "surface-dim": "#131313",
+                        "secondary-container": "#04bb63",
+                        "on-tertiary-fixed": "#360e09",
+                        "on-error": "#690005",
+                        "outline-variant": "#4a454f",
+                        "surface-container-low": "#1c1b1b",
+                        "on-primary": "#3e235e",
+                        "error": "#ffb4ab",
+                        "on-tertiary-container": "#7a433b",
+                        "on-background": "#e5e2e1",
+                        "surface-tint": "#dab9ff",
+                        "on-primary-fixed-variant": "#553a76",
+                        "primary-fixed-dim": "#dab9ff",
+                        "on-error-container": "#ffdad6",
+                        "on-surface-variant": "#ccc4d0",
+                        "tertiary-fixed": "#ffdad5",
+                        "on-tertiary-fixed-variant": "#6c3831",
+                        "secondary-fixed-dim": "#49e183",
+                        "success-container": "rgba(6, 187, 99, 0.3)",
+                        "on-secondary-fixed": "#00210c",
+                        "on-surface": "#e5e2e1",
+                        "tertiary-fixed-dim": "#ffb4a9",
+                        "on-tertiary": "#51221c",
+                        "secondary-fixed": "#6afe9c",
+                        "on-primary-fixed": "#280a47",
+                        "on-secondary": "#003919",
+                        "primary-container": "#dab9ff",
+                        "outline": "#968e9a",
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface-glass": "rgba(30, 30, 30, 0.6)",
+                        "surface-container-highest": "#353534",
+                        "surface-container": "#201f1f",
+                        "surface-variant": "#353534",
+                        "secondary": "#49e183",
+                        "outline-muted": "#978d9d",
+                        "on-secondary-fixed-variant": "#005228",
+                        "tertiary": "#ffdad5",
+                        "background": "#131313",
+                        "surface-bright": "#393939",
+                        "on-secondary-container": "#00431f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "lg": "24px",
+                        "container-margin": "20px",
+                        "base": "8px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "sm": "12px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "label-md": ["JetBrains Mono"],
+                        "title-lg": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["10px", {"lineHeight": "12px", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(32, 31, 31, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .glow-effect {
+            background: radial-gradient(circle at center, rgba(238, 220, 255, 0.15) 0%, rgba(19, 19, 19, 0) 70%);
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+    <style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-hidden select-none">
+<!-- Atmospheric Background Elements -->
+<div class="fixed inset-0 z-0 pointer-events-none">
+    <div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] glow-effect rounded-full blur-[100px]"></div>
+    <div class="absolute bottom-[-20%] left-[-10%] w-[70%] h-[70%] bg-secondary/5 rounded-full blur-[120px]"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+</div>
+<!-- Main Onboarding Container -->
+<main class="relative z-10 flex flex-col items-center justify-between min-h-screen px-container-margin py-xl">
+    <!-- Top App Bar Mockup (Logo Only for Splash) -->
+    <header class="w-full flex justify-center pt-lg">
+        <div class="flex items-center gap-xs">
+            <span class="material-symbols-outlined text-primary text-[32px]" style="font-variation-settings: 'FILL' 1;">shield_lock</span>
+            <span class="font-headline-md text-headline-md font-bold tracking-tight text-on-surface">Vault</span>
+        </div>
+    </header>
+    <!-- Hero Content Section -->
+    <section class="flex-1 flex flex-col items-center justify-center text-center max-w-lg w-full">
+        <div class="relative mb-xl group">
+            <!-- Glowing central icon -->
+            <div class="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse"></div>
+            <div class="relative w-32 h-32 glass-card rounded-[32px] flex items-center justify-center animate-float border-primary/20">
+                <span class="material-symbols-outlined text-[64px] text-primary" style="font-variation-settings: 'FILL' 1;">currency_exchange</span>
+            </div>
+        </div>
+        <h1 class="font-display-lg text-display-lg mb-md leading-tight">
+            Secure your <span class="text-secondary">financial legacy</span>
+        </h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-sm">
+            Advanced portfolio management and institutional-grade security for the modern tech professional.
+        </p>
+        <!-- Bento-style Security Badges -->
+        <div class="mt-xl grid grid-cols-2 gap-sm w-full max-w-md">
+            <div class="glass-card p-md rounded-xl flex items-center gap-sm">
+                <div class="w-8 h-8 rounded-lg bg-secondary-container/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+                </div>
+                <span class="font-label-md text-label-md">256-bit AES</span>
+            </div>
+            <div class="glass-card p-md rounded-xl flex items-center gap-sm">
+                <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">monitoring</span>
+                </div>
+                <span class="font-label-md text-label-md">Live Alpha</span>
+            </div>
+        </div>
+    </section>
+    <!-- Action Section -->
+    <footer class="w-full max-w-sm flex flex-col gap-md pb-xl">
+        <button class="w-full h-14 bg-primary text-on-primary font-title-lg text-title-lg rounded-2xl flex items-center justify-center gap-sm active:scale-95 transition-transform shadow-xl shadow-primary/10">
+            Get Started
+            <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+        <button class="w-full h-14 glass-card text-on-surface font-title-lg text-title-lg rounded-2xl flex items-center justify-center hover:bg-surface-container-high active:scale-95 transition-all">
+            Sign In
+        </button>
+        <div class="flex items-center justify-center gap-xs mt-base opacity-60">
+            <span class="material-symbols-outlined text-xs">lock</span>
+            <span class="font-label-sm text-label-sm uppercase tracking-widest">Biometric Login Available</span>
+        </div>
+    </footer>
+</main>
+<!-- Interactive Background Particles -->
+<canvas class="fixed inset-0 z-0 opacity-30" id="canvas"></canvas>
+<script>
+    // Simple ambient particle system for the "Lumina" feel
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 1.5 + 0.5;
+            this.speedX = Math.random() * 0.2 - 0.1;
+            this.speedY = Math.random() * 0.2 - 0.1;
+            this.opacity = Math.random() * 0.5 + 0.1;
+        }
+
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if (this.x > canvas.width) this.x = 0;
+            if (this.x < 0) this.x = canvas.width;
+            if (this.y > canvas.height) this.y = 0;
+            if (this.y < 0) this.y = canvas.height;
+        }
+
+        draw() {
+            ctx.fillStyle = `rgba(238, 220, 255, ${this.opacity})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    function init() {
+        for (let i = 0; i < 60; i++) {
+            particles.push(new Particle());
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+        requestAnimationFrame(animate);
+    }
+
+    init();
+    animate();
+</script>
+</body></html>

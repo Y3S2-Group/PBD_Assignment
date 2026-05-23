@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.financeapp.data.local.IncomeDao
 import com.example.financeapp.data.local.IncomeDatabase
+import com.example.financeapp.data.local.ExpenseDao
 import com.example.financeapp.data.repository.IncomeRepositoryImpl
 import com.example.financeapp.domain.repository.IncomeRepository
 import dagger.Binds
@@ -31,11 +32,15 @@ abstract class IncomeModule {
                 context,
                 IncomeDatabase::class.java,
                 "income.db"
-            ).build()
+            )
+                .fallbackToDestructiveMigration()
+                .build()
         }
 
         @Provides
         fun provideIncomeDao(database: IncomeDatabase): IncomeDao = database.incomeDao()
+
+        @Provides
+        fun provideExpenseDao(database: IncomeDatabase): ExpenseDao = database.expenseDao()
     }
 }
-

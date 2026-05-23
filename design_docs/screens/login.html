@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Vault - Secure Login</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Inter:wght@400;600&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-primary": "#6e528f",
+                      "tertiary-container": "#ffb4a9",
+                      "primary-fixed": "#eedbff",
+                      "inverse-surface": "#e5e2e1",
+                      "error-container": "rgba(147, 0, 10, 0.3)",
+                      "primary": "#eedcff",
+                      "surface-container-high": "#2a2a2a",
+                      "border-glass": "rgba(255, 255, 255, 0.05)",
+                      "inverse-on-surface": "#313030",
+                      "on-primary-container": "#614683",
+                      "surface": "#131313",
+                      "surface-dim": "#131313",
+                      "secondary-container": "#04bb63",
+                      "on-tertiary-fixed": "#360e09",
+                      "on-error": "#690005",
+                      "outline-variant": "#4a454f",
+                      "surface-container-low": "#1c1b1b",
+                      "on-primary": "#3e235e",
+                      "error": "#ffb4ab",
+                      "on-tertiary-container": "#7a433b",
+                      "on-background": "#e5e2e1",
+                      "surface-tint": "#dab9ff",
+                      "on-primary-fixed-variant": "#553a76",
+                      "primary-fixed-dim": "#dab9ff",
+                      "on-error-container": "#ffdad6",
+                      "on-surface-variant": "#ccc4d0",
+                      "tertiary-fixed": "#ffdad5",
+                      "on-tertiary-fixed-variant": "#6c3831",
+                      "secondary-fixed-dim": "#49e183",
+                      "success-container": "rgba(6, 187, 99, 0.3)",
+                      "on-secondary-fixed": "#00210c",
+                      "on-surface": "#e5e2e1",
+                      "tertiary-fixed-dim": "#ffb4a9",
+                      "on-tertiary": "#51221c",
+                      "secondary-fixed": "#6afe9c",
+                      "on-primary-fixed": "#280a47",
+                      "on-secondary": "#003919",
+                      "primary-container": "#dab9ff",
+                      "outline": "#968e9a",
+                      "surface-container-lowest": "#0e0e0e",
+                      "surface-glass": "rgba(30, 30, 30, 0.6)",
+                      "surface-container-highest": "#353534",
+                      "surface-container": "#201f1f",
+                      "surface-variant": "#353534",
+                      "secondary": "#49e183",
+                      "outline-muted": "#978d9d",
+                      "on-secondary-fixed-variant": "#005228",
+                      "tertiary": "#ffdad5",
+                      "background": "#131313",
+                      "surface-bright": "#393939",
+                      "on-secondary-container": "#00431f"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "32px",
+                      "lg": "24px",
+                      "container-margin": "20px",
+                      "base": "8px",
+                      "xs": "4px",
+                      "md": "16px",
+                      "sm": "12px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "label-sm": ["JetBrains Mono"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Hanken Grotesk"],
+                      "headline-md": ["Hanken Grotesk"],
+                      "label-md": ["JetBrains Mono"],
+                      "title-lg": ["Inter"],
+                      "headline-lg": ["Hanken Grotesk"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "label-sm": ["10px", {"lineHeight": "12px", "fontWeight": "700"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-02em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(32, 31, 31, 0.7);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .input-glow:focus-within {
+            box-shadow: 0 0 15px rgba(238, 220, 255, 0.15);
+            border-color: #eedcff;
+        }
+        .massive-btn {
+            height: 56px;
+            border-radius: 20px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .massive-btn:active {
+            transform: scale(0.96);
+        }
+        body {
+            background-color: #131313;
+            color: #e5e2e1;
+        }
+    </style>
+    <style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen overflow-hidden px-container-margin">
+<!-- Atmospheric Background Decoration -->
+<div class="fixed top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary/10 blur-[120px] pointer-events-none"></div>
+<div class="fixed bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-secondary/5 blur-[100px] pointer-events-none"></div>
+<main class="w-full max-w-md relative z-10">
+    <!-- Logo Area -->
+    <div class="flex flex-col items-center mb-xl">
+        <div class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-md shadow-[0_0_40px_rgba(238,220,255,0.3)]">
+            <span class="material-symbols-outlined text-on-primary text-[32px]" data-icon="account_balance_wallet" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+        </div>
+        <h1 class="font-headline-md text-headline-md font-bold text-on-surface">Vault</h1>
+        <p class="font-body-md text-on-surface-variant mt-xs">Personal Wealth Management</p>
+    </div>
+    <!-- Login Container -->
+    <div class="glass-card rounded-[32px] p-xl shadow-2xl">
+        <header class="mb-xl text-center md:text-left">
+            <h2 class="font-headline-lg text-headline-lg text-on-surface">Welcome Back</h2>
+            <p class="font-body-md text-on-surface-variant">Access your high-performance portfolio</p>
+        </header>
+        <form class="space-y-lg" onsubmit="event.preventDefault();">
+            <!-- Email Field -->
+            <div class="space-y-xs">
+                <label class="font-label-md text-label-md text-on-surface-variant block ml-1">Work Email</label>
+                <div class="relative flex items-center input-glow transition-all duration-300 bg-surface-container-high rounded-xl border border-border-glass">
+                    <span class="material-symbols-outlined absolute left-md text-outline" data-icon="alternate_email">alternate_email</span>
+                    <input class="w-full bg-transparent border-none focus:ring-0 pl-12 pr-md py-md font-body-md text-on-surface placeholder:text-outline-muted" placeholder="name@company.com" type="email"/>
+                </div>
+            </div>
+            <!-- Password Field -->
+            <div class="space-y-xs">
+                <div class="flex justify-between items-center ml-1">
+                    <label class="font-label-md text-label-md text-on-surface-variant">Master Password</label>
+                    <a class="font-label-md text-label-md text-primary hover:underline transition-all" href="#">Forgot Password?</a>
+                </div>
+                <div class="relative flex items-center input-glow transition-all duration-300 bg-surface-container-high rounded-xl border border-border-glass">
+                    <span class="material-symbols-outlined absolute left-md text-outline" data-icon="lock">lock</span>
+                    <input class="w-full bg-transparent border-none focus:ring-0 pl-12 pr-12 py-md font-body-md text-on-surface placeholder:text-outline-muted" placeholder="••••••••" type="password"/>
+                    <button class="absolute right-md text-outline hover:text-on-surface transition-colors" type="button">
+                        <span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Main Action -->
+            <button class="massive-btn w-full bg-primary text-on-primary font-title-lg text-title-lg font-bold flex items-center justify-center gap-base shadow-xl">
+                Login
+                <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+            </button>
+            <!-- Biometric Alternative -->
+            <div class="flex flex-col items-center py-base">
+                <button class="group flex flex-col items-center gap-xs focus:outline-none" type="button">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center border border-border-glass group-hover:border-primary/50 group-hover:bg-primary/5 transition-all duration-300">
+                        <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary text-[28px]" data-icon="fingerprint">fingerprint</span>
+                    </div>
+                    <span class="font-label-sm text-label-sm text-outline-muted uppercase tracking-wider group-hover:text-on-surface">Biometric Login</span>
+                </button>
+            </div>
+        </form>
+    </div>
+    <!-- Social Login Section -->
+    <footer class="mt-xl">
+        <div class="flex items-center gap-md mb-lg">
+            <div class="h-[1px] flex-1 bg-border-glass"></div>
+            <span class="font-label-sm text-label-sm text-outline-muted">OR CONTINUE WITH</span>
+            <div class="h-[1px] flex-1 bg-border-glass"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-md">
+            <button class="flex items-center justify-center gap-base h-14 bg-surface-container-low border border-border-glass rounded-xl hover:bg-surface-container-high transition-colors group">
+                <img alt="Google" class="w-5 h-5 grayscale group-hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDj5bUoe58Kk8ci3_n3FR4kGXrHmlEWzNIxPCOIPyzTstsdQZfn9D5SV-I261mFJC2fvlRQ6WmKefUqHN0HIxY7KGFJOQ-y0U7oJhiARjinPIU8A9MdpPr46alrGFE89zlT2e5HLJ2UmYm7Gd2LCIN-iN9ku4WGeTYc-24zNKUWyPdKOioPycrUVu_7-0VaTR_McNltqalRjGkWFAItxrn5deUqxLc7RZaT_pllfphnl4MqpjBahFD0bJ9ruV6Gsn7JCtT--R3LE70"/>
+                <span class="font-label-md text-label-md text-on-surface">Google</span>
+            </button>
+            <button class="flex items-center justify-center gap-base h-14 bg-surface-container-low border border-border-glass rounded-xl hover:bg-surface-container-high transition-colors group">
+                <span class="material-symbols-outlined text-on-surface text-[20px]" data-icon="terminal" style="font-variation-settings: 'FILL' 1;">terminal</span>
+                <span class="font-label-md text-label-md text-on-surface">GitHub</span>
+            </button>
+        </div>
+        <p class="text-center mt-xl font-body-md text-on-surface-variant">
+            Don't have an account?
+            <a class="text-secondary font-bold hover:underline" href="#">Apply for Access</a>
+        </p>
+    </footer>
+</main>
+<!-- Micro-interaction Script -->
+<script>
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('focus', () => {
+            input.parentElement.classList.add('scale-[1.01]');
+        });
+        input.addEventListener('blur', () => {
+            input.parentElement.classList.remove('scale-[1.01]');
+        });
+    });
+</script>
+</body></html>
