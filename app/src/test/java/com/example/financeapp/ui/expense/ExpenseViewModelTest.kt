@@ -3,6 +3,7 @@ package com.example.financeapp.ui.expense
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import app.cash.turbine.test
 import com.example.financeapp.domain.model.Expense
+import com.example.financeapp.domain.repository.ExpenseRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -36,9 +37,36 @@ class ExpenseViewModelTest {
         Dispatchers.resetMain()
     }
 
+    private class FakeExpenseRepository(
+        seed: List<Expense>
+    ) : ExpenseRepository {
+        private val entries = seed.toMutableList()
+
+        override suspend fun insertExpense(expense: Expense) {
+            entries.add(expense)
+        }
+
+        override suspend fun getAllExpenses(): List<Expense> = entries.toList()
+
+        override suspend fun getBySpendingType(spendingType: String): List<Expense> =
+            entries.filter { it.spendingType == spendingType }
+
+        override suspend fun sumAmountLkrBetween(startInclusive: Long, endInclusive: Long): Double =
+            entries.filter { it.timestamp in startInclusive..endInclusive }.sumOf { it.amountLkr }
+    }
+
+    private fun seededRepository(): ExpenseRepository = FakeExpenseRepository(
+        listOf(
+            Expense("exp_1", 1200.0, "Food", "DISCRETIONARY", "Card", 1_717_043_200_000),
+            Expense("exp_2", 800.0, "Rent", "COMMITTED", "Transfer", 1_717_129_600_000)
+        )
+    )
+
+    private fun emptyRepository(): ExpenseRepository = FakeExpenseRepository(emptyList())
+
     @Test
     fun initialState_isEmpty() = testScope.runTest {
-        val viewModel = ExpenseViewModel()
+        val viewModel = ExpenseViewModel(emptyRepository())
 
         viewModel.state.test {
             val state = awaitItem()
@@ -50,7 +78,7 @@ class ExpenseViewModelTest {
 
     @Test
     fun addExpense_updatesState() = testScope.runTest {
-        val viewModel = ExpenseViewModel()
+        val viewModel = ExpenseViewModel(emptyRepository())
         val expense = Expense(
             id = "exp_8",
             amountLkr = 1500.0,
@@ -71,7 +99,7 @@ class ExpenseViewModelTest {
 
     @Test
     fun committedVsDiscretionaryTotals_calculated() = testScope.runTest {
-        val viewModel = ExpenseViewModel()
+        val viewModel = ExpenseViewModel(seededRepository())
         val committed = Expense(
             id = "exp_9",
             amountLkr = 2000.0,
@@ -94,9 +122,10 @@ class ExpenseViewModelTest {
             viewModel.addExpense(committed)
             viewModel.addExpense(discretionary)
             testScope.testScheduler.advanceUntilIdle()
+            withTimeout(1_000) { awaitItem() }
             val updated = withTimeout(1_000) { awaitItem() }
-            assertEquals(2000.0, updated.committedTotal, 0.01)
-            assertEquals(500.0, updated.discretionaryTotal, 0.01)
+            assertEquals(2800.0, updated.committedTotal, 0.01)
+            assertEquals(1700.0, updated.discretionaryTotal, 0.01)
         }
     }
 }
