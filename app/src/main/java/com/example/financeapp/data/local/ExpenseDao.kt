@@ -14,10 +14,15 @@ interface ExpenseDao {
     @Query("SELECT * FROM expenses WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): Expense?
 
+    @Query("SELECT * FROM expenses")
+    suspend fun getAll(): List<Expense>
+
     @Query("SELECT * FROM expenses WHERE spendingType = :spendingType")
     suspend fun getBySpendingType(spendingType: String): List<Expense>
+
+    @Query("SELECT SUM(amountLkr) FROM expenses WHERE spendingType = :spendingType")
+    suspend fun sumAmountLkrBySpendingType(spendingType: String): Double?
 
     @Query("SELECT SUM(amountLkr) FROM expenses WHERE timestamp BETWEEN :startInclusive AND :endInclusive")
     suspend fun sumAmountLkrBetween(startInclusive: Long, endInclusive: Long): Double?
 }
-
