@@ -46,6 +46,17 @@ class IncomeViewModelTest {
             entries.add(income)
         }
 
+        override suspend fun updateIncome(income: Income) {
+            val index = entries.indexOfFirst { it.id == income.id }
+            if (index >= 0) {
+                entries[index] = income
+            }
+        }
+
+        override suspend fun deleteIncome(id: String) {
+            entries.removeAll { it.id == id }
+        }
+
         override suspend fun getAllIncomes(): List<Income> = entries.toList()
 
         override suspend fun getBySourceType(sourceType: String): List<Income> =
@@ -55,14 +66,18 @@ class IncomeViewModelTest {
             entries.filter { it.date in startInclusive..endInclusive }.sumOf { it.amountLKR }
     }
 
-    private fun seededRepository(): IncomeRepository = FakeIncomeRepository(
-        listOf(
-            Income("inc_salary_01", 4200.0, "USD", 1_260_000.0, "SALARY", 1_717_043_200_000),
-            Income("inc_freelance_01", 500.0, "USD", 150_000.0, "FREELANCE", 1_717_129_600_000),
-            Income("inc_adsense_01", 150.0, "USD", 45_000.0, "ADSENSE", 1_717_216_000_000),
-            Income("inc_crypto_01", 0.05, "ETH", 90_000.0, "CRYPTO", 1_717_302_400_000)
+    private fun seededRepository(): IncomeRepository {
+        val now = System.currentTimeMillis()
+        val dayMillis = 24 * 60 * 60 * 1000L
+        return FakeIncomeRepository(
+            listOf(
+                Income("inc_salary_01", 4200.0, "USD", 1_260_000.0, "SALARY", null, now - 6 * dayMillis),
+                Income("inc_freelance_01", 500.0, "USD", 150_000.0, "FREELANCE", null, now - 4 * dayMillis),
+                Income("inc_adsense_01", 150.0, "USD", 45_000.0, "ADSENSE", null, now - 2 * dayMillis),
+                Income("inc_crypto_01", 0.05, "ETH", 90_000.0, "CRYPTO", null, now - dayMillis)
+            )
         )
-    )
+    }
 
     private fun emptyRepository(): IncomeRepository = FakeIncomeRepository(emptyList())
 
@@ -98,7 +113,13 @@ class IncomeViewModelTest {
 
         viewModel.totalLkr.test {
             assertEquals(0.0, awaitItem(), 0.0)
-            viewModel.addIncome(amount = 100.0, currency = "USD", sourceType = "FREELANCE", notes = null)
+            viewModel.addIncome(
+                amount = 100.0,
+                currency = "USD",
+                sourceType = "FREELANCE",
+                sourceLabel = null,
+                notes = null
+            )
             testScope.testScheduler.advanceUntilIdle()
             val updated = withTimeout(1_000) { awaitItem() }
             assertEquals(30_000.0, updated, 0.01)
