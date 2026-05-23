@@ -6,8 +6,9 @@ import data.model.ExpenseCategory
 import domain.repository.ExpenseRepository
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.callbackFlow
 
 class ExpenseRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
@@ -25,7 +26,7 @@ class ExpenseRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getExpenses(userId: String): Flow<List<Expense>> = kotlinx.coroutines.flow.callbackFlow {
+    override fun getExpenses(userId: String): Flow<List<Expense>> = callbackFlow {
         val listener = firestore.collection("expenses")
             .whereEqualTo("userId", userId)
             .addSnapshotListener { snapshot, error ->
