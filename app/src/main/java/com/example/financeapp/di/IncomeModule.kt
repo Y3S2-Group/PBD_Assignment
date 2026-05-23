@@ -32,7 +32,9 @@ abstract class IncomeModule {
                 context,
                 IncomeDatabase::class.java,
                 "income.db"
-            ).build()
+            )
+                .fallbackToDestructiveMigration()
+                .build()
         }
 
         @Provides
