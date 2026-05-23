@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "533265095551",
+    "project_id": "pbd-assignment",
+    "storage_bucket": "pbd-assignment.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:533265095551:android:89e5e349ff4041aec8984a",
+        "android_client_info": {
+          "package_name": "com.example.financeapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "533265095551-jmd259shnc54a7om3ilik8iqthd4f0h5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.financeapp",
+            "certificate_hash": "caa706980536e0a687dffbf21171c6e72804425f"
+          }
+        },
+        {
+          "client_id": "533265095551-9cdkhffntk4tl8p46ussi7721cnoteuc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1znr9BNBrAn_Ei0YpkXh4vhdMjK1LH0w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "533265095551-9cdkhffntk4tl8p46ussi7721cnoteuc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
