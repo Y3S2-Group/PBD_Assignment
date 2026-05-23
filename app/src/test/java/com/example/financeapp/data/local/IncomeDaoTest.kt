@@ -43,6 +43,7 @@ class IncomeDaoTest {
             currency = "USD",
             amountLKR = 1260000.0,
             sourceType = "SALARY",
+            sourceLabel = null,
             date = System.currentTimeMillis()
         )
 
@@ -56,9 +57,9 @@ class IncomeDaoTest {
     @Test
     fun filterIncomeBySourceType() = kotlinx.coroutines.runBlocking {
         val entries = listOf(
-            Income("inc_freelance_01", 500.0, "USD", 150000.0, "FREELANCE", System.currentTimeMillis()),
-            Income("inc_adsense_01", 150.0, "USD", 45000.0, "ADSENSE", System.currentTimeMillis()),
-            Income("inc_freelance_02", 300.0, "USD", 90000.0, "FREELANCE", System.currentTimeMillis())
+            Income("inc_freelance_01", 500.0, "USD", 150000.0, "FREELANCE", null, System.currentTimeMillis()),
+            Income("inc_adsense_01", 150.0, "USD", 45000.0, "ADSENSE", null, System.currentTimeMillis()),
+            Income("inc_freelance_02", 300.0, "USD", 90000.0, "FREELANCE", null, System.currentTimeMillis())
         )
 
         entries.forEach { dao.insert(it) }
@@ -75,10 +76,10 @@ class IncomeDaoTest {
         val monthEnd = LocalDate.of(2026, 5, 31).atTime(23, 59, 59).atZone(zone).toInstant().toEpochMilli()
 
         val mayIncome = listOf(
-            Income("inc_may_01", 200.0, "USD", 60000.0, "FREELANCE", monthStart + 10_000),
-            Income("inc_may_02", 120.0, "USD", 36000.0, "ADSENSE", monthStart + 20_000)
+            Income("inc_may_01", 200.0, "USD", 60000.0, "FREELANCE", null, monthStart + 10_000),
+            Income("inc_may_02", 120.0, "USD", 36000.0, "ADSENSE", null, monthStart + 20_000)
         )
-        val aprilIncome = Income("inc_apr_01", 100.0, "USD", 30000.0, "ADSENSE", monthStart - 86_400_000)
+        val aprilIncome = Income("inc_apr_01", 100.0, "USD", 30000.0, "ADSENSE", null, monthStart - 86_400_000)
 
         mayIncome.forEach { dao.insert(it) }
         dao.insert(aprilIncome)
@@ -87,4 +88,3 @@ class IncomeDaoTest {
         assertEquals(96000.0, sum, 0.01)
     }
 }
-
