@@ -23,7 +23,7 @@ import com.example.financeapp.ui.expense.ExpenseScreen
 import com.example.financeapp.ui.income.IncomeScreen
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onSignOut: () -> Unit = {}) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
