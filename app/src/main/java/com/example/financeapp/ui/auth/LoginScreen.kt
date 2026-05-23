@@ -47,6 +47,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -55,13 +56,24 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.financeapp.R
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -71,6 +83,8 @@ fun LoginScreen(
 ) {
     val authUiState by viewModel.authUiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -86,6 +100,41 @@ fun LoginScreen(
                 viewModel.clearError()
             }
             else -> Unit
+        }
+    }
+
+    // ── Google Sign-In handler ─────────────────────────────────────────
+    val handleGoogleSignIn: () -> Unit = {
+        scope.launch {
+            try {
+                val credentialManager = CredentialManager.create(context)
+                val googleIdOption = GetGoogleIdOption.Builder()
+                    .setFilterByAuthorizedAccounts(false)
+                    .setServerClientId(context.getString(R.string.default_web_client_id))
+                    .setAutoSelectEnabled(false)
+                    .build()
+                val request = GetCredentialRequest.Builder()
+                    .addCredentialOption(googleIdOption)
+                    .build()
+
+                val result = credentialManager.getCredential(context, request)
+                val credential = result.credential
+
+                if (credential is CustomCredential &&
+                    credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+                ) {
+                    val googleCred = GoogleIdTokenCredential.createFrom(credential.data)
+                    viewModel.signInWithGoogle(googleCred.idToken)
+                } else {
+                    snackbarHostState.showSnackbar("Unexpected credential type. Please try again.")
+                }
+            } catch (e: GetCredentialCancellationException) {
+                // User dismissed the picker — no action needed
+            } catch (e: NoCredentialException) {
+                snackbarHostState.showSnackbar("No Google account found on this device.")
+            } catch (e: GetCredentialException) {
+                snackbarHostState.showSnackbar("Google sign-in failed: ${e.message}")
+            }
         }
     }
 
@@ -280,7 +329,7 @@ fun LoginScreen(
                         }
                     }
 
-                    // Biometric option
+                    // Biometric option (UI placeholder)
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.fillMaxWidth(),
@@ -336,13 +385,20 @@ fun LoginScreen(
 
                 Spacer(Modifier.height(16.dp))
 
-                // Social buttons
+                // Social buttons – Google is live, GitHub is placeholder
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    SocialButton(label = "Google", modifier = Modifier.weight(1f))
-                    SocialButton(label = "GitHub", modifier = Modifier.weight(1f))
+                    SocialButton(
+                        label = "Google",
+                        onClick = handleGoogleSignIn,
+                        modifier = Modifier.weight(1f),
+                    )
+                    SocialButton(
+                        label = "GitHub",
+                        modifier = Modifier.weight(1f),
+                    )
                 }
 
                 Spacer(Modifier.height(28.dp))
@@ -371,9 +427,13 @@ fun LoginScreen(
 }
 
 @Composable
-private fun SocialButton(label: String, modifier: Modifier = Modifier) {
+private fun SocialButton(
+    label: String,
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
     OutlinedButton(
-        onClick = {},
+        onClick = onClick,
         modifier = modifier.height(52.dp),
         shape = RoundedCornerShape(12.dp),
         border = androidx.compose.foundation.BorderStroke(
