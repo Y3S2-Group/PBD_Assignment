@@ -10,6 +10,6 @@ data class Income(
     val currency: String,
     val amountLKR: Double,
     val sourceType: String,
+    val sourceLabel: String? = null,
     val date: Long
 )
-
