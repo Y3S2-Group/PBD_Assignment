@@ -1,0 +1,41 @@
+package com.example.financeapp.di
+
+import android.content.Context
+import androidx.room.Room
+import com.example.financeapp.data.local.IncomeDao
+import com.example.financeapp.data.local.IncomeDatabase
+import com.example.financeapp.data.repository.IncomeRepositoryImpl
+import com.example.financeapp.domain.repository.IncomeRepository
+import dagger.Binds
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class IncomeModule {
+    @Binds
+    @Singleton
+    abstract fun bindIncomeRepository(impl: IncomeRepositoryImpl): IncomeRepository
+
+    companion object {
+        @Provides
+        @Singleton
+        fun provideIncomeDatabase(
+            @ApplicationContext context: Context
+        ): IncomeDatabase {
+            return Room.databaseBuilder(
+                context,
+                IncomeDatabase::class.java,
+                "income.db"
+            ).build()
+        }
+
+        @Provides
+        fun provideIncomeDao(database: IncomeDatabase): IncomeDao = database.incomeDao()
+    }
+}
+
