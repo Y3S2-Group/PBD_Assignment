@@ -385,21 +385,11 @@ fun LoginScreen(
 
                 Spacer(Modifier.height(16.dp))
 
-                // Social buttons – Google is live, GitHub is placeholder
-                Row(
+                SocialButton(
+                    label = "Google",
+                    onClick = handleGoogleSignIn,
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    SocialButton(
-                        label = "Google",
-                        onClick = handleGoogleSignIn,
-                        modifier = Modifier.weight(1f),
-                    )
-                    SocialButton(
-                        label = "GitHub",
-                        modifier = Modifier.weight(1f),
-                    )
-                }
+                )
 
                 Spacer(Modifier.height(28.dp))
 
@@ -427,7 +417,7 @@ fun LoginScreen(
 }
 
 @Composable
-private fun SocialButton(
+internal fun SocialButton(
     label: String,
     onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
