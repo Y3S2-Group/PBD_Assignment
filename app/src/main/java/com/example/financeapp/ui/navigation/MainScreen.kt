@@ -77,7 +77,7 @@ fun MainScreen(onSignOut: () -> Unit = {}) {
             startDestination = AppRoute.Dashboard.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(AppRoute.Dashboard.route) { DashboardScreen() }
+            composable(AppRoute.Dashboard.route) { DashboardScreen(onSignOut = onSignOut) }
             composable(AppRoute.Income.route) { IncomeScreen() }
             composable(AppRoute.Expenses.route) { ExpenseScreen() }
             composable(AppRoute.Budget.route) { BudgetScreen() }
