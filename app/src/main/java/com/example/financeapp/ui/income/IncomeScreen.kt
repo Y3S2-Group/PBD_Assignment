@@ -5,51 +5,93 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BusinessCenter
 import androidx.compose.material.icons.outlined.Campaign
 import androidx.compose.material.icons.outlined.CurrencyBitcoin
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Work
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.financeapp.domain.model.Income
+import java.text.NumberFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
-fun IncomeScreen() {
-    val incomeEntries = incomeMockEntries()
+fun IncomeScreen(viewModel: IncomeViewModel = hiltViewModel()) {
+    val state by viewModel.state.collectAsState()
+    val totalLkr by viewModel.totalLkr.collectAsState()
+    var showBottomSheet by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadIncomeHistory()
+    }
+
+    val incomeEntries = (state as? IncomeUiState.Success)
+        ?.entries
+        ?.map { it.toIncomeEntry() }
+        .orEmpty()
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+            contentPadding = PaddingValues(
                 start = 20.dp,
                 end = 20.dp,
                 top = 16.dp,
@@ -57,13 +99,13 @@ fun IncomeScreen() {
             ),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            item { IncomeHeader() }
+            item { IncomeHeader(totalLkr = totalLkr) }
             item { SourceBreakdownChart() }
             item { IncomeHistoryList(entries = incomeEntries) }
         }
 
         FloatingActionButton(
-            onClick = {},
+            onClick = { showBottomSheet = true },
             shape = RoundedCornerShape(20.dp),
             containerColor = Color.Transparent,
             contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -89,11 +131,21 @@ fun IncomeScreen() {
                 Text(text = "+", style = MaterialTheme.typography.headlineMedium)
             }
         }
+
+        if (showBottomSheet) {
+            AddIncomeBottomSheet(
+                onDismiss = { showBottomSheet = false },
+                onSave = { amount, currency, source, notes ->
+                    viewModel.addIncome(amount, currency, source, notes)
+                    showBottomSheet = false
+                }
+            )
+        }
     }
 }
 
 @Composable
-private fun IncomeHeader() {
+private fun IncomeHeader(totalLkr: Double) {
     Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -149,13 +201,13 @@ private fun IncomeHeader() {
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "$5,270.50",
+                    text = "LKR ${formatAmount(totalLkr)}",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "+12.5% vs last month",
+                    text = "Updated just now",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -414,6 +466,182 @@ private fun GlassCard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AddIncomeBottomSheet(
+    onDismiss: () -> Unit,
+    onSave: (Double, String, String, String?) -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var amountText by rememberSaveable { mutableStateOf("") }
+    var selectedCurrency by rememberSaveable { mutableStateOf("LKR") }
+    var selectedSource by rememberSaveable { mutableStateOf("SALARY") }
+    var notes by rememberSaveable { mutableStateOf("") }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+        tonalElevation = 0.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.9f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .imePadding(),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Amount",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = selectedCurrency,
+                        style = MaterialTheme.typography.displaySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    TextField(
+                        value = amountText,
+                        onValueChange = { value ->
+                            amountText = value.filter { it.isDigit() || it == '.' }
+                        },
+                        textStyle = MaterialTheme.typography.displaySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center
+                        ),
+                        placeholder = {
+                            Text(
+                                text = "0.00",
+                                style = MaterialTheme.typography.displaySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        modifier = Modifier.width(180.dp)
+                    )
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "Currency",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("LKR", "USD", "USDT", "ETH").forEach { currency ->
+                        FilterChip(
+                            selected = selectedCurrency == currency,
+                            onClick = { selectedCurrency = currency },
+                            label = { Text(currency) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        )
+                    }
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "Source",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    val sources = listOf(
+                        SourceOption("SALARY", "Salary", Icons.Outlined.Work),
+                        SourceOption("FREELANCE", "Freelance", Icons.Outlined.BusinessCenter),
+                        SourceOption("ADSENSE", "AdSense", Icons.Outlined.Campaign),
+                        SourceOption("CRYPTO", "Crypto", Icons.Outlined.CurrencyBitcoin)
+                    )
+
+                    sources.chunked(2).forEach { rowItems ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            rowItems.forEach { option ->
+                                FilterChip(
+                                    selected = selectedSource == option.key,
+                                    onClick = { selectedSource = option.key },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = option.icon,
+                                            contentDescription = option.label
+                                        )
+                                    },
+                                    label = { Text(option.label) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                    ),
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            TextField(
+                value = notes,
+                onValueChange = { notes = it },
+                placeholder = { Text("Add a note (optional)") },
+                textStyle = MaterialTheme.typography.bodyMedium,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            val amountValue = amountText.toDoubleOrNull()
+            Button(
+                onClick = {
+                    if (amountValue != null) {
+                        onSave(amountValue, selectedCurrency, selectedSource, notes.ifBlank { null })
+                    }
+                },
+                enabled = amountValue != null,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text(text = "Save Income", style = MaterialTheme.typography.titleMedium)
+            }
+        }
+    }
+}
+
+private data class SourceOption(
+    val key: String,
+    val label: String,
+    val icon: ImageVector
+)
+
 private data class IncomeEntry(
     val title: String,
     val primaryAmount: String,
@@ -426,58 +654,48 @@ private data class IncomeEntry(
 
 private data class IncomeStatus(val label: String, val color: Color)
 
-@Composable
-private fun incomeMockEntries(): List<IncomeEntry> {
-    val secondary = MaterialTheme.colorScheme.secondary
-    val primary = MaterialTheme.colorScheme.primary
-    val tertiary = MaterialTheme.colorScheme.tertiary
+private fun formatAmount(amount: Double): String {
+    val formatter = NumberFormat.getNumberInstance(Locale.US)
+    return formatter.format(amount)
+}
 
-    return listOf(
-        IncomeEntry(
-            title = "Salary",
-            secondaryAmount = "LKR 1,260,000",
-            primaryAmount = "$4,200",
-            dateLabel = "Today",
-            icon = Icons.Outlined.Work,
-            tint = secondary
-        ),
-        IncomeEntry(
-            title = "Freelance Project",
-            secondaryAmount = "LKR 150,000",
-            primaryAmount = "$500 USD",
-            dateLabel = "Yesterday",
-            icon = Icons.Outlined.BusinessCenter,
-            tint = primary,
-            status = IncomeStatus("Paid", secondary)
-        ),
-        IncomeEntry(
-            title = "Crypto Dividend",
-            secondaryAmount = "$120.50 (LKR 36,150)",
-            primaryAmount = "0.05 ETH",
-            dateLabel = "Oct 24",
-            icon = Icons.Outlined.CurrencyBitcoin,
-            tint = tertiary
-        ),
-        IncomeEntry(
-            title = "AdSense",
-            secondaryAmount = "LKR 45,000",
-            primaryAmount = "$150 USD",
-            dateLabel = "Oct 22",
-            icon = Icons.Outlined.Campaign,
-            tint = primary
-        ),
-        IncomeEntry(
-            title = "Freelance Logo Design",
-            secondaryAmount = "LKR 90,000",
-            primaryAmount = "$300 USD",
-            dateLabel = "Oct 20",
-            icon = Icons.Outlined.Palette,
-            tint = tertiary,
-            status = IncomeStatus("Pending", tertiary)
-        )
+@Composable
+private fun Income.toIncomeEntry(): IncomeEntry {
+    return IncomeEntry(
+        title = sourceType.replaceFirstChar { it.uppercase() },
+        primaryAmount = "${formatAmount(amount)} $currency",
+        secondaryAmount = "LKR ${formatAmount(amountLKR)}",
+        dateLabel = formatDate(date),
+        icon = sourceIconFor(sourceType),
+        tint = sourceTintFor(sourceType)
     )
 }
 
+private fun formatDate(epochMillis: Long): String {
+    val formatter = DateTimeFormatter.ofPattern("MMM dd")
+    return Instant.ofEpochMilli(epochMillis)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+        .format(formatter)
+}
 
+private fun sourceIconFor(sourceType: String): ImageVector {
+    return when (sourceType.uppercase()) {
+        "SALARY" -> Icons.Outlined.Work
+        "FREELANCE" -> Icons.Outlined.BusinessCenter
+        "ADSENSE" -> Icons.Outlined.Campaign
+        "CRYPTO" -> Icons.Outlined.CurrencyBitcoin
+        else -> Icons.Outlined.Work
+    }
+}
 
-
+@Composable
+private fun sourceTintFor(sourceType: String): Color {
+    return when (sourceType.uppercase()) {
+        "SALARY" -> MaterialTheme.colorScheme.secondary
+        "FREELANCE" -> MaterialTheme.colorScheme.primary
+        "ADSENSE" -> MaterialTheme.colorScheme.primaryContainer
+        "CRYPTO" -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.secondary
+    }
+}
