@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "533265095551",
+    "project_id": "pbd-assignment",
+    "storage_bucket": "pbd-assignment.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:533265095551:android:89e5e349ff4041aec8984a",
+        "android_client_info": {
+          "package_name": "com.example.financeapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1znr9BNBrAn_Ei0YpkXh4vhdMjK1LH0w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
