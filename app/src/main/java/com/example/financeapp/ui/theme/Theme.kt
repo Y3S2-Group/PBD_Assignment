@@ -1,46 +1,45 @@
 package com.example.financeapp.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val DarkColorScheme = darkColorScheme(
-    primary = PurplePrimary,
-    secondary = GreenAccent,
-    background = DarkSurface,
-    surface = DarkSurface,
-    surfaceVariant = DarkSurfaceVariant,
-    onPrimary = OnLightSurface,
-    onSecondary = OnLightSurface,
-    onBackground = OnDarkSurface,
-    onSurface = OnDarkSurface
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = PurpleSecondary,
-    secondary = GreenAccentDark,
-    background = LightSurface,
-    surface = LightSurface,
-    surfaceVariant = LightSurfaceVariant,
-    onPrimary = OnLightSurface,
-    onSecondary = OnLightSurface,
-    onBackground = OnLightSurface,
-    onSurface = OnLightSurface
+    primary = Primary,
+    onPrimary = OnPrimary,
+    primaryContainer = PrimaryContainer,
+    onPrimaryContainer = OnPrimaryContainer,
+    secondary = Secondary,
+    onSecondary = OnSecondary,
+    secondaryContainer = SecondaryContainer,
+    onSecondaryContainer = OnSecondaryContainer,
+    error = Error,
+    onError = OnError,
+    errorContainer = ErrorContainer,
+    onErrorContainer = OnErrorContainer,
+    background = Background,
+    onBackground = OnBackground,
+    surface = Surface,
+    onSurface = OnSurface,
+    surfaceVariant = SurfaceVariant,
+    onSurfaceVariant = OnSurfaceVariant,
+    surfaceContainerLowest = SurfaceContainerLowest,
+    surfaceContainerLow = SurfaceContainerLow,
+    surfaceContainer = SurfaceContainer,
+    surfaceContainerHigh = SurfaceContainerHigh,
+    surfaceContainerHighest = SurfaceContainerHighest,
+    outline = Outline,
+    outlineVariant = OutlineVariant,
+    inverseSurface = InverseSurface,
+    inverseOnSurface = InverseOnSurface,
+    inversePrimary = InversePrimary,
 )
 
 @Composable
-fun AppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
-    val colors = if (darkTheme) DarkColorScheme else LightColorScheme
-
+fun AppTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = colors,
+        colorScheme = DarkColorScheme,
         typography = AppTypography,
-        content = content
+        content = content,
     )
 }
-
