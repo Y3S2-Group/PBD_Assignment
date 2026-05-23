@@ -26,7 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
-import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.TrendingUp
 import androidx.compose.material.icons.rounded.VerifiedUser
@@ -40,7 +39,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -263,27 +261,6 @@ fun WelcomeScreen(
                     )
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .padding(top = 4.dp)
-                        .alpha(0.55f),
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Lock,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(11.dp),
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        text = "BIOMETRIC LOGIN AVAILABLE",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        letterSpacing = 1.5.sp,
-                    )
-                }
             }
         }
     }
