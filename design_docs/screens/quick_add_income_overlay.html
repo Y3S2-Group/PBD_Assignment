@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Inter:wght@400;600&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-glass": "rgba(30, 30, 30, 0.6)",
+                      "surface-container-low": "#1c1b1b",
+                      "tertiary": "#ffdad5",
+                      "on-error": "#690005",
+                      "surface-container": "#201f1f",
+                      "inverse-surface": "#e5e2e1",
+                      "outline-variant": "#4a454f",
+                      "on-background": "#e5e2e1",
+                      "on-secondary-fixed-variant": "#005228",
+                      "error": "#ffb4ab",
+                      "background": "#131313",
+                      "on-secondary-fixed": "#00210c",
+                      "secondary-fixed-dim": "#49e183",
+                      "primary-fixed-dim": "#dab9ff",
+                      "tertiary-fixed": "#ffdad5",
+                      "success-container": "rgba(6, 187, 99, 0.3)",
+                      "on-primary-fixed-variant": "#553a76",
+                      "outline-muted": "#978d9d",
+                      "tertiary-fixed-dim": "#ffb4a9",
+                      "surface-container-high": "#2a2a2a",
+                      "inverse-primary": "#6e528f",
+                      "surface": "#131313",
+                      "primary": "#eedcff",
+                      "surface-bright": "#393939",
+                      "on-tertiary": "#51221c",
+                      "on-primary-fixed": "#280a47",
+                      "surface-tint": "#dab9ff",
+                      "on-tertiary-fixed-variant": "#6c3831",
+                      "surface-variant": "#353534",
+                      "surface-container-lowest": "#0e0e0e",
+                      "error-container": "rgba(147, 0, 10, 0.3)",
+                      "primary-container": "#dab9ff",
+                      "border-glass": "rgba(255, 255, 255, 0.05)",
+                      "on-secondary": "#003919",
+                      "on-tertiary-fixed": "#360e09",
+                      "tertiary-container": "#ffb4a9",
+                      "surface-dim": "#131313",
+                      "secondary": "#49e183",
+                      "on-surface-variant": "#ccc4d0",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-highest": "#353534",
+                      "outline": "#968e9a",
+                      "on-surface": "#e5e2e1",
+                      "on-primary": "#3e235e",
+                      "secondary-fixed": "#6afe9c",
+                      "inverse-on-surface": "#313030",
+                      "primary-fixed": "#eedbff",
+                      "secondary-container": "#04bb63",
+                      "on-tertiary-container": "#7a433b",
+                      "on-secondary-container": "#00431f",
+                      "on-primary-container": "#614683"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "xl": "32px",
+                      "sm": "12px",
+                      "lg": "24px",
+                      "gutter": "16px",
+                      "container-margin": "20px",
+                      "md": "16px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Hanken Grotesk"],
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Hanken Grotesk"],
+                      "label-sm": ["JetBrains Mono"],
+                      "title-lg": ["Inter"],
+                      "label-md": ["JetBrains Mono"],
+                      "display-lg": ["Hanken Grotesk"]
+              }
+            }
+          }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(32, 31, 31, 0.8);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .tap-highlight-transparent {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .keypad-button:active {
+            transform: scale(0.92);
+            background-color: #2a2a2a;
+        }
+        body {
+            background-color: #131313;
+            color: #e5e2e1;
+            overflow: hidden;
+        }
+    </style>
+    <style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+<!-- Top Navigation Bar -->
+<header class="w-full top-0 sticky bg-background dark:bg-background flex justify-between items-center px-gutter py-md z-50">
+    <div class="flex items-center gap-base">
+        <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors active:scale-95">
+            <span class="material-symbols-outlined text-primary">close</span>
+        </button>
+        <h1 class="font-headline-md text-headline-md font-bold text-primary">Add Income</h1>
+    </div>
+    <div class="flex items-center gap-sm">
+        <div class="flex flex-col items-end">
+            <span class="font-label-md text-label-md text-on-surface-variant">Wallet Balance</span>
+            <span class="font-label-md text-label-md text-secondary font-bold">$12,450.00</span>
+        </div>
+        <div class="w-8 h-8 rounded-full overflow-hidden border border-border-glass">
+            <img alt="User Profile" data-alt="A close-up, high-fidelity studio portrait of a professional modern tech executive. The lighting is dramatic and moody with deep shadows and soft rim lighting in neon green tones, reflecting a sophisticated dark-mode aesthetic. The subject has a confident expression, perfectly centered against a blurred obsidian background with subtle digital bokeh effects." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOmFJr8HRtVYUZrRmk2BW9AgeK-oi3FF82kc78kKlNCGmQAjGrljkbPKF76rliEc5dmphZ5koZ4d41YQ_obaB1vcvumbwhBZIjENu9f-gslUTRkL3xi0V7MlkMolcCqZNxaM5UtV68Fsi6PErB-mhv1celBl_boO82dQm8LpTBa7FIwJisqjVJ_z6-p9z0m8L9FxSxnziENsKFrOtA2x5qo8hgPepVBs37fThimywAT5PUdjDDHHHv1D37YTamO6t9ycxI9aRgd6A"/>
+        </div>
+    </div>
+</header>
+<main class="flex-1 flex flex-col px-gutter overflow-y-auto pb-32">
+    <!-- Amount Display Section -->
+    <section class="py-lg flex flex-col items-center justify-center">
+        <span class="font-label-md text-label-md text-secondary uppercase tracking-widest mb-xs">Amount Received</span>
+        <div class="flex items-baseline gap-xs">
+            <span class="font-display-lg text-display-lg text-secondary">+</span>
+            <span class="font-display-lg text-display-lg text-on-surface" id="amount-display">0.00</span>
+            <span class="font-headline-md text-headline-md text-on-surface-variant ml-base">USD</span>
+        </div>
+        <div class="h-1 w-24 bg-secondary-container rounded-full mt-sm blur-[1px]"></div>
+    </section>
+    <!-- Dynamic Selectors Bento Grid -->
+    <section class="grid grid-cols-2 gap-sm mb-lg">
+        <!-- Category/Source -->
+        <button class="glass-card rounded-xl p-md flex flex-col items-start gap-xs text-left tap-highlight-transparent active:scale-95 transition-transform">
+            <div class="flex items-center gap-xs text-secondary mb-xs">
+                <span class="material-symbols-outlined text-[20px]">category</span>
+                <span class="font-label-md text-label-md uppercase">Source</span>
+            </div>
+            <div class="flex justify-between w-full items-center">
+                <span class="font-title-lg text-title-lg text-on-surface">Freelance</span>
+                <span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
+            </div>
+        </button>
+        <!-- Date Picker -->
+        <button class="glass-card rounded-xl p-md flex flex-col items-start gap-xs text-left tap-highlight-transparent active:scale-95 transition-transform">
+            <div class="flex items-center gap-xs text-primary mb-xs">
+                <span class="material-symbols-outlined text-[20px]">calendar_today</span>
+                <span class="font-label-md text-label-md uppercase">Date</span>
+            </div>
+            <div class="flex justify-between w-full items-center">
+                <span class="font-title-lg text-title-lg text-on-surface">Today</span>
+                <span class="material-symbols-outlined text-on-surface-variant">event</span>
+            </div>
+        </button>
+        <!-- Currency -->
+        <button class="glass-card rounded-xl p-md flex flex-col items-start gap-xs text-left tap-highlight-transparent active:scale-95 transition-transform col-span-2">
+            <div class="flex items-center gap-xs text-on-surface-variant mb-xs">
+                <span class="material-symbols-outlined text-[20px]">payments</span>
+                <span class="font-label-md text-label-md uppercase">Deposit To</span>
+            </div>
+            <div class="flex justify-between w-full items-center">
+                <div class="flex items-center gap-sm">
+                    <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center">
+                        <span class="material-symbols-outlined text-secondary" data-weight="fill">account_balance</span>
+                    </div>
+                    <span class="font-title-lg text-title-lg text-on-surface">Main Business Savings</span>
+                </div>
+                <span class="font-label-md text-label-md text-on-surface-variant">...4829</span>
+            </div>
+        </button>
+    </section>
+    <!-- Keypad Grid -->
+    <section class="flex-1 grid grid-cols-3 gap-md max-h-[400px]">
+        <button class="keypad-button glass-card rounded-xl flex items-center justify-center font-display-lg text-[24px] text-on-surface duration-200" onclick="appendNumber('1')">1</button>
+        <button class="keypad-button glass-card rounded-xl flex items-center justify-center font-display-lg text-[24px] text-on-surface duration-200" onclick="appendNumber('2')">2</button>
+        <button class="keypad-button glass-card rounded-xl flex items-center justify-center font-display-lg text-[24px] text-on-surface duration-200" onclick="appendNumber('3')">3</button>
+        <button class="keypad-button glass-card rounded-xl flex items-center justify-center font-display-lg text-[24px] text-on-surface duration-200" onclick="appendNumber('4')">4</button>
+        <button class="keypad-button glass-card rounded-xl flex items-center justify-center font-display-lg text-[24px] text-on-surface duration-200" onclick="appendNumber('5')">5</button>
+        <button class="keypad-button glass-card rounded-xl flex items-center justify-center font-display-lg text-[24px] text-on-surface duration-200" onclick="appendNumber('6')">6</button>
+        <button class="keypad-button glass-card rounded-xl flex items-center justify-center font-display-lg text-[24px] text-on-surface duration-200" onclick="appendNumber('7')">7</button>
+        <button class="keypad-button glass-card rounded-xl flex items-center justify-center font-display-lg text-[24px] text-on-surface duration-200" onclick="appendNumber('8')">8</button>
+        <button class="keypad-button glass-card rounded-xl flex items-center justify-center font-display-lg text-[24px] text-on-surface duration-200" onclick="appendNumber('9')">9</button>
+        <button class="keypad-button glass-card rounded-xl flex items-center justify-center font-display-lg text-[24px] text-on-surface duration-200" onclick="appendNumber('.')">.</button>
+        <button class="keypad-button glass-card rounded-xl flex items-center justify-center font-display-lg text-[24px] text-on-surface duration-200" onclick="appendNumber('0')">0</button>
+        <button class="keypad-button glass-card rounded-xl flex items-center justify-center duration-200" onclick="deleteNumber()">
+            <span class="material-symbols-outlined text-error">backspace</span>
+        </button>
+    </section>
+</main>
+<!-- Bottom Action Container -->
+<footer class="fixed bottom-0 left-0 w-full p-gutter pb-8 bg-gradient-to-t from-background via-background/95 to-transparent">
+    <button class="w-full bg-secondary-container text-on-secondary-container h-14 rounded-xl flex items-center justify-center gap-base font-title-lg text-title-lg shadow-[0px_10px_30px_rgba(4,187,99,0.3)] active:scale-95 transition-all">
+        <span class="material-symbols-outlined">add_circle</span>
+        Add Income
+    </button>
+</footer>
+<!-- Background Atmospheric Glows -->
+<div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none">
+    <div class="absolute top-[-10%] right-[-20%] w-[80%] h-[50%] bg-secondary/10 blur-[120px] rounded-full"></div>
+    <div class="absolute bottom-[-5%] left-[-10%] w-[60%] h-[40%] bg-primary/5 blur-[100px] rounded-full"></div>
+</div>
+<script>
+    let currentAmount = "0.00";
+    let isTyping = false;
+
+    function updateDisplay() {
+        document.getElementById('amount-display').textContent = currentAmount;
+    }
+
+    function appendNumber(num) {
+        if (!isTyping) {
+            if (num === '.') {
+                currentAmount = "0.";
+            } else {
+                currentAmount = num;
+            }
+            isTyping = true;
+        } else {
+            if (num === '.' && currentAmount.includes('.')) return;
+
+            // Limit decimals to 2
+            if (currentAmount.includes('.')) {
+                const parts = currentAmount.split('.');
+                if (parts[1].length >= 2) return;
+            }
+
+            // Limit total length
+            if (currentAmount.length > 10) return;
+
+            currentAmount += num;
+        }
+        updateDisplay();
+    }
+
+    function deleteNumber() {
+        if (currentAmount.length <= 1) {
+            currentAmount = "0.00";
+            isTyping = false;
+        } else {
+            currentAmount = currentAmount.slice(0, -1);
+        }
+        updateDisplay();
+    }
+
+    // Haptic feedback simulation
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(btn => {
+        btn.addEventListener('touchstart', () => {
+            if (window.navigator.vibrate) {
+                window.navigator.vibrate(5);
+            }
+        });
+    });
+</script>
+</body></html>
