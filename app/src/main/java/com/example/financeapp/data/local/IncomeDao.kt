@@ -14,10 +14,12 @@ interface IncomeDao {
     @Query("SELECT * FROM incomes WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): Income?
 
+    @Query("SELECT * FROM incomes")
+    suspend fun getAll(): List<Income>
+
     @Query("SELECT * FROM incomes WHERE sourceType = :sourceType")
     suspend fun getBySourceType(sourceType: String): List<Income>
 
     @Query("SELECT SUM(amountLKR) FROM incomes WHERE date BETWEEN :startInclusive AND :endInclusive")
     suspend fun sumAmountLkrBetween(startInclusive: Long, endInclusive: Long): Double?
 }
-
