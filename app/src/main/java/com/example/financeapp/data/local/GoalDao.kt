@@ -16,5 +16,7 @@ interface GoalDao {
 
     @Query("UPDATE goals SET currentSavings = :newSavings WHERE id = :id")
     suspend fun updateCurrentSavings(id: String, newSavings: Double)
-}
 
+    @Query("SELECT * FROM goals ORDER BY createdAt DESC LIMIT 1")
+    suspend fun getLatest(): Goal?
+}

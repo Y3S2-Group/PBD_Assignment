@@ -9,6 +9,6 @@ data class Goal(
     val name: String,
     val targetAmount: Double,
     val currentSavings: Double,
-    val deadlineTimestamp: Long
+    val deadlineTimestamp: Long,
+    val createdAt: Long
 )
-

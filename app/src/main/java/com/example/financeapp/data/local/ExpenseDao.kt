@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.financeapp.domain.model.Expense
+import com.example.financeapp.data.local.ExpenseCategoryTotal
 
 @Dao
 interface ExpenseDao {
@@ -25,4 +26,7 @@ interface ExpenseDao {
 
     @Query("SELECT SUM(amountLkr) FROM expenses WHERE timestamp BETWEEN :startInclusive AND :endInclusive")
     suspend fun sumAmountLkrBetween(startInclusive: Long, endInclusive: Long): Double?
+
+    @Query("SELECT category AS category, SUM(amountLkr) AS total FROM expenses WHERE timestamp BETWEEN :startInclusive AND :endInclusive GROUP BY category")
+    suspend fun sumAmountLkrByCategoryBetween(startInclusive: Long, endInclusive: Long): List<ExpenseCategoryTotal>
 }
