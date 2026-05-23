@@ -58,40 +58,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.financeapp.domain.model.Goal
+import com.example.financeapp.domain.model.BudgetCategorySummary
 import java.text.NumberFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 
 @Composable
 fun BudgetScreen(viewModel: BudgetViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
     val scrollState = rememberScrollState()
 
-    // Default goal values aligned with the design spec when no goal is active yet.
-    val fallbackGoal = remember {
-        Goal(
-            id = "goal_macbook",
-            name = "MacBook Pro M4",
-            targetAmount = 750_000.0,
-            currentSavings = 450_000.0,
-            deadlineTimestamp = 0L
-        )
-    }
-    val activeGoal = state.activeGoal ?: fallbackGoal
-    val monthsRemaining = remember { 10 }
-    val progressPercent = if (state.activeGoal != null) {
-        state.progressPercent
-    } else {
-        viewModel.calculateProgressPercent(fallbackGoal)
-    }
-    val requiredMonthlySavings = if (state.activeGoal != null) {
-        state.requiredMonthlySavings
-    } else {
-        viewModel.calculateRequiredMonthlySavings(fallbackGoal, monthsRemaining)
-    }
-    val progress = (progressPercent / 100.0).toFloat().coerceIn(0f, 1f)
+    val goal = state.activeGoal
+    val progress = (state.progressPercent / 100.0).toFloat().coerceIn(0f, 1f)
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
         animationSpec = tween(durationMillis = 900),
@@ -100,6 +86,8 @@ fun BudgetScreen(viewModel: BudgetViewModel = hiltViewModel()) {
 
     var diningReduction by rememberSaveable { mutableStateOf(5000f) }
     var entertainmentReduction by rememberSaveable { mutableStateOf(2000f) }
+    var showBoostDialog by rememberSaveable { mutableStateOf(false) }
+    var boostAmountInput by rememberSaveable { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -110,18 +98,37 @@ fun BudgetScreen(viewModel: BudgetViewModel = hiltViewModel()) {
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         BudgetTopBar()
-        SavingsGoalCard(
-            goal = activeGoal,
-            progress = animatedProgress,
-            progressPercent = progressPercent,
-            requiredMonthlySavings = requiredMonthlySavings
-        )
-        MonthlyBudgetSection()
+        if (goal != null) {
+            SavingsGoalCard(
+                goal = goal,
+                progress = animatedProgress,
+                progressPercent = state.progressPercent,
+                requiredMonthlySavings = state.requiredMonthlySavings,
+                onBoostClick = { showBoostDialog = true }
+            )
+        } else {
+            EmptyGoalCard()
+        }
+        MonthlyBudgetSection(categories = state.categoryBudgets)
         BudgetOptimizerCard(
             diningReduction = diningReduction,
             entertainmentReduction = entertainmentReduction,
             onDiningChange = { diningReduction = it },
             onEntertainmentChange = { entertainmentReduction = it }
+        )
+    }
+
+    if (showBoostDialog) {
+        BoostSavingsDialog(
+            amountInput = boostAmountInput,
+            onAmountChange = { boostAmountInput = it },
+            onDismiss = { showBoostDialog = false },
+            onConfirm = {
+                val amount = boostAmountInput.toDoubleOrNull() ?: 0.0
+                viewModel.addSavingsToGoal(amount)
+                boostAmountInput = ""
+                showBoostDialog = false
+            }
         )
     }
 }
@@ -167,7 +174,8 @@ private fun SavingsGoalCard(
     goal: Goal,
     progress: Float,
     progressPercent: Double,
-    requiredMonthlySavings: Double
+    requiredMonthlySavings: Double,
+    onBoostClick: () -> Unit
 ) {
     val shape = RoundedCornerShape(20.dp)
     val gradient = Brush.linearGradient(
@@ -273,7 +281,7 @@ private fun SavingsGoalCard(
                         )
                     }
                     Button(
-                        onClick = {},
+                        onClick = onBoostClick,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
@@ -313,7 +321,7 @@ private fun GoalStatusChip(text: String) {
 }
 
 @Composable
-private fun MonthlyBudgetSection() {
+private fun MonthlyBudgetSection(categories: List<BudgetCategorySummary>) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -331,47 +339,38 @@ private fun MonthlyBudgetSection() {
             )
         }
 
-        val categories = listOf(
-            BudgetCategoryUi(
-                name = "Food & Dining",
-                spent = 12_000.0,
-                total = 30_000.0,
-                icon = Icons.Rounded.Restaurant,
-                accent = MaterialTheme.colorScheme.secondary
-            ),
-            BudgetCategoryUi(
-                name = "Tech & Gadgets",
-                spent = 19_000.0,
-                total = 25_000.0,
-                icon = Icons.Rounded.Devices,
-                accent = MaterialTheme.colorScheme.tertiary
-            ),
-            BudgetCategoryUi(
-                name = "Subscriptions",
-                spent = 16_000.0,
-                total = 15_000.0,
-                icon = Icons.Rounded.Subscriptions,
-                accent = MaterialTheme.colorScheme.error
-            ),
-            BudgetCategoryUi(
-                name = "Transport",
-                spent = 5_500.0,
-                total = 12_000.0,
-                icon = Icons.Rounded.Commute,
-                accent = MaterialTheme.colorScheme.secondary
-            )
-        )
-
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            categories.forEach { category ->
-                BudgetCategoryCard(category)
+        if (categories.isEmpty()) {
+            GlassCard {
+                Text(
+                    text = "No budgets set for this month yet.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                categories.forEach { category ->
+                    BudgetCategoryCard(category)
+                }
             }
         }
     }
 }
 
 @Composable
-private fun BudgetCategoryCard(category: BudgetCategoryUi) {
+private fun BudgetCategoryCard(category: BudgetCategorySummary) {
+    val visuals = categoryVisuals(category.categoryName)
+    val progress = if (category.allocatedAmount > 0.0) {
+        (category.actualSpent / category.allocatedAmount).toFloat().coerceIn(0f, 1f)
+    } else {
+        0f
+    }
+    val accent = if (category.actualSpent > category.allocatedAmount) {
+        MaterialTheme.colorScheme.error
+    } else {
+        visuals.accent
+    }
+
     GlassCard {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -386,9 +385,9 @@ private fun BudgetCategoryCard(category: BudgetCategoryUi) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = category.icon,
+                    imageVector = visuals.icon,
                     contentDescription = null,
-                    tint = category.accent
+                    tint = accent
                 )
             }
             Column(
@@ -399,16 +398,16 @@ private fun BudgetCategoryCard(category: BudgetCategoryUi) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(text = category.name, style = MaterialTheme.typography.titleMedium)
+                    Text(text = category.categoryName, style = MaterialTheme.typography.titleMedium)
                     Text(
-                        text = "${formatLkr(category.spent)} / ${formatLkr(category.total)}",
+                        text = "${formatLkr(category.actualSpent)} / ${formatLkr(category.allocatedAmount)}",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 LinearProgressTrack(
-                    progress = (category.spent / category.total).toFloat().coerceIn(0f, 1f),
-                    accent = category.accent
+                    progress = progress,
+                    accent = accent
                 )
             }
         }
@@ -594,14 +593,6 @@ private fun LinearProgressTrack(progress: Float, accent: Color) {
     }
 }
 
-private data class BudgetCategoryUi(
-    val name: String,
-    val spent: Double,
-    val total: Double,
-    val icon: ImageVector,
-    val accent: Color
-)
-
 private fun formatLkr(amount: Double): String {
     val formatter = NumberFormat.getNumberInstance(Locale.US)
     return "LKR ${formatter.format(amount)}"
@@ -613,4 +604,93 @@ private fun formatDeadline(deadlineTimestamp: Long): String {
     return Instant.ofEpochMilli(deadlineTimestamp)
         .atZone(ZoneId.systemDefault())
         .format(formatter)
+}
+
+@Composable
+private fun EmptyGoalCard() {
+    GlassCard {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = "Savings Goal",
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = "No goal available yet.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun BoostSavingsDialog(
+    amountInput: String,
+    onAmountChange: (String) -> Unit,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = "Boost Savings") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "Enter the amount you want to add toward your goal.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                TextField(
+                    value = amountInput,
+                    onValueChange = onAmountChange,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(text = "Add")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = "Cancel")
+            }
+        }
+    )
+}
+
+private data class BudgetCategoryVisual(
+    val icon: ImageVector,
+    val accent: Color
+)
+
+@Composable
+private fun categoryVisuals(categoryName: String): BudgetCategoryVisual {
+    return when (categoryName.lowercase(Locale.US)) {
+        "food", "food & dining", "dining" -> BudgetCategoryVisual(
+            icon = Icons.Rounded.Restaurant,
+            accent = MaterialTheme.colorScheme.secondary
+        )
+        "tech", "tech & gadgets", "gadgets" -> BudgetCategoryVisual(
+            icon = Icons.Rounded.Devices,
+            accent = MaterialTheme.colorScheme.tertiary
+        )
+        "subscriptions", "subscription" -> BudgetCategoryVisual(
+            icon = Icons.Rounded.Subscriptions,
+            accent = MaterialTheme.colorScheme.error
+        )
+        "transport", "commute" -> BudgetCategoryVisual(
+            icon = Icons.Rounded.Commute,
+            accent = MaterialTheme.colorScheme.secondary
+        )
+        else -> BudgetCategoryVisual(
+            icon = Icons.Rounded.AccountBalanceWallet,
+            accent = MaterialTheme.colorScheme.primary
+        )
+    }
 }
