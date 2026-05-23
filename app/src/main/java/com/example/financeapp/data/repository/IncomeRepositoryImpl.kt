@@ -4,20 +4,29 @@ import com.example.financeapp.data.local.IncomeDao
 import com.example.financeapp.domain.model.Income
 import com.example.financeapp.domain.repository.IncomeRepository
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class IncomeRepositoryImpl @Inject constructor(
     private val incomeDao: IncomeDao
 ) : IncomeRepository {
     override suspend fun insertIncome(income: Income) {
-        incomeDao.insert(income)
+        withContext(Dispatchers.IO) {
+            incomeDao.insert(income)
+        }
     }
 
-    override suspend fun getAllIncomes(): List<Income> = incomeDao.getAll()
+    override suspend fun getAllIncomes(): List<Income> = withContext(Dispatchers.IO) {
+        incomeDao.getAll()
+    }
 
-    override suspend fun getBySourceType(sourceType: String): List<Income> =
+    override suspend fun getBySourceType(sourceType: String): List<Income> = withContext(Dispatchers.IO) {
         incomeDao.getBySourceType(sourceType)
+    }
 
     override suspend fun sumAmountLkrBetween(startInclusive: Long, endInclusive: Long): Double =
-        incomeDao.sumAmountLkrBetween(startInclusive, endInclusive) ?: 0.0
+        withContext(Dispatchers.IO) {
+            incomeDao.sumAmountLkrBetween(startInclusive, endInclusive) ?: 0.0
+        }
 }
 
