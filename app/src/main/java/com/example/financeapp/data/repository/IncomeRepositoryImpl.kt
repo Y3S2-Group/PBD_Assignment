@@ -16,6 +16,18 @@ class IncomeRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateIncome(income: Income) {
+        withContext(Dispatchers.IO) {
+            incomeDao.update(income)
+        }
+    }
+
+    override suspend fun deleteIncome(id: String) {
+        withContext(Dispatchers.IO) {
+            incomeDao.deleteById(id)
+        }
+    }
+
     override suspend fun getAllIncomes(): List<Income> = withContext(Dispatchers.IO) {
         incomeDao.getAll()
     }
@@ -29,4 +41,3 @@ class IncomeRepositoryImpl @Inject constructor(
             incomeDao.sumAmountLkrBetween(startInclusive, endInclusive) ?: 0.0
         }
 }
-
