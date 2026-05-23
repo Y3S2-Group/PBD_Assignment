@@ -75,8 +75,13 @@ fun ExpenseScreen(viewModel: ExpenseViewModel = hiltViewModel()) {
         ) {
             item { ExpenseTopBar() }
             item { ExpenseSummaryCard(totalSpent = state.expenses.sumOf { it.amountLkr }) }
-            item { CategoryFilterRow() }
-            item { ExpenseActivityList(expenses = state.expenses) }
+            item {
+                CategoryFilterRow(
+                    selectedCategory = state.selectedFilterCategory,
+                    onCategorySelected = viewModel::setFilterCategory
+                )
+            }
+            item { ExpenseActivityList(expenses = state.filteredExpenses) }
         }
 
         FloatingActionButton(
@@ -207,20 +212,39 @@ private fun ExpenseSummaryCard(totalSpent: Double) {
 }
 
 @Composable
-private fun CategoryFilterRow() {
+private fun CategoryFilterRow(
+    selectedCategory: String,
+    onCategorySelected: (String) -> Unit
+) {
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        item { FilterPill(label = "All", selected = true) }
+        item {
+            FilterPill(
+                label = "All",
+                selected = selectedCategory.equals("All", ignoreCase = true),
+                onClick = { onCategorySelected("All") }
+            )
+        }
         listOf("Food", "Transport", "Tech", "Subs", "Travel").forEach { label ->
-            item { FilterPill(label = label, selected = false) }
+            item {
+                FilterPill(
+                    label = label,
+                    selected = selectedCategory.equals(label, ignoreCase = true),
+                    onClick = { onCategorySelected(label) }
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun FilterPill(label: String, selected: Boolean) {
+private fun FilterPill(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
     val background = if (selected) {
         MaterialTheme.colorScheme.secondaryContainer
     } else {
@@ -236,6 +260,7 @@ private fun FilterPill(label: String, selected: Boolean) {
         modifier = Modifier
             .background(background, RoundedCornerShape(50))
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), RoundedCornerShape(50))
+            .clickable { onClick() }
             .padding(horizontal = 18.dp, vertical = 8.dp)
     ) {
         Text(text = label, style = MaterialTheme.typography.labelMedium, color = textColor)
