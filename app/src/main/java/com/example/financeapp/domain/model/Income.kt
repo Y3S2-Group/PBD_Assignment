@@ -11,5 +11,15 @@ data class Income(
     val amountLKR: Double,
     val sourceType: String,
     val sourceLabel: String? = null,
-    val date: Long
+    val date: Long,
+    // ── Enhanced fields ───────────────────────────────────────────────────────
+    val notes: String? = null,
+    /** Freelance project name or client reference. */
+    val projectRef: String? = null,
+    /** Exchange rate (to LKR) used at time of entry. */
+    val exchangeRate: Double = 1.0,
+    /** True when this entry was created from a recurring income template. */
+    val isRecurring: Boolean = false,
+    /** For freelance entries: whether the invoice has been paid. */
+    val invoicePaid: Boolean = true,
 )

@@ -2,11 +2,12 @@ package com.example.financeapp.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.financeapp.data.local.BudgetDao
+import com.example.financeapp.data.local.ExpenseDao
+import com.example.financeapp.data.local.GoalDao
 import com.example.financeapp.data.local.IncomeDao
 import com.example.financeapp.data.local.IncomeDatabase
-import com.example.financeapp.data.local.ExpenseDao
-import com.example.financeapp.data.local.BudgetDao
-import com.example.financeapp.data.local.GoalDao
+import com.example.financeapp.data.local.RecurringIncomeDao
 import com.example.financeapp.data.local.SavingsDepositDao
 import com.example.financeapp.data.repository.IncomeRepositoryImpl
 import com.example.financeapp.domain.repository.IncomeRepository
@@ -21,6 +22,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class IncomeModule {
+
     @Binds
     @Singleton
     abstract fun bindIncomeRepository(impl: IncomeRepositoryImpl): IncomeRepository
@@ -55,5 +57,9 @@ abstract class IncomeModule {
         @Provides
         fun provideSavingsDepositDao(database: IncomeDatabase): SavingsDepositDao =
             database.savingsDepositDao()
+
+        @Provides
+        fun provideRecurringIncomeDao(database: IncomeDatabase): RecurringIncomeDao =
+            database.recurringIncomeDao()
     }
 }
