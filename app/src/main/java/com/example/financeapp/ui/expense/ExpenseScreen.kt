@@ -476,7 +476,7 @@ private fun QuickAddOverlay(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            CategoryGrid(
+            CategoryScrollRow(
                 selectedCategory = selectedCategory,
                 onCategorySelected = {
                     selectedCategory = it
@@ -486,57 +486,57 @@ private fun QuickAddOverlay(
                 }
             )
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "Spending Type",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf("COMMITTED", "DISCRETIONARY").forEach { type ->
-                            FilterChip(
-                                selected = spendingType == type,
-                                onClick = { spendingType = type },
-                                label = {
-                                    Text(
-                                        text = if (type == "COMMITTED") "Comm." else "Disc.",
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                )
+            Text(
+                text = "Spending Type",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                listOf("COMMITTED", "DISCRETIONARY").forEach { type ->
+                    FilterChip(
+                        selected = spendingType == type,
+                        onClick = { spendingType = type },
+                        label = {
+                            Text(
+                                text = if (type == "COMMITTED") "Committed" else "Discretionary",
+                                style = MaterialTheme.typography.labelSmall
                             )
-                        }
-                    }
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
                 }
+            }
 
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "Payment",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+            Text(
+                text = "Payment",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                listOf("Card", "Cash", "Wallet").forEach { method ->
+                    FilterChip(
+                        selected = paymentMethod.startsWith(method),
+                        onClick = {
+                            paymentMethod = if (method == "Wallet") "Digital Wallet" else method
+                        },
+                        label = { Text(method, style = MaterialTheme.typography.labelSmall) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
                     )
-                    Row(
-                        modifier = Modifier.horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf("Card", "Cash", "Wallet").forEach { method ->
-                            FilterChip(
-                                selected = paymentMethod.startsWith(method),
-                                onClick = {
-                                    paymentMethod = if (method == "Wallet") "Digital Wallet" else method
-                                },
-                                label = { Text(method, style = MaterialTheme.typography.labelSmall) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                )
-                            )
-                        }
-                    }
                 }
             }
 
@@ -592,7 +592,7 @@ private fun AmountDisplay(value: String) {
 }
 
 @Composable
-private fun CategoryGrid(
+private fun CategoryScrollRow(
     selectedCategory: String,
     onCategorySelected: (String) -> Unit
 ) {
@@ -607,17 +607,18 @@ private fun CategoryGrid(
         CategoryOption("Other", Icons.Outlined.MoreHoriz)
     )
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        categories.chunked(4).forEach { rowItems ->
-            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                rowItems.forEach { option ->
-                    CategoryIcon(
-                        option = option,
-                        selected = selectedCategory == option.label,
-                        onClick = { onCategorySelected(option.label) }
-                    )
-                }
-            }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        categories.forEach { option ->
+            CategoryIcon(
+                option = option,
+                selected = selectedCategory == option.label,
+                onClick = { onCategorySelected(option.label) }
+            )
         }
     }
 }
