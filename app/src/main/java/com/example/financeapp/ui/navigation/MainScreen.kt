@@ -21,53 +21,57 @@ import com.example.financeapp.ui.budget.BudgetScreen
 import com.example.financeapp.ui.dashboard.DashboardScreen
 import com.example.financeapp.ui.expense.ExpenseScreen
 import com.example.financeapp.ui.income.IncomeScreen
+import com.example.financeapp.ui.profile.ProfileScreen
 
 @Composable
 fun MainScreen(onSignOut: () -> Unit = {}) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
+    val isProfileRoute = currentDestination?.hierarchy?.any { it.route == AppRoute.Profile.route } == true
 
     Scaffold(
         bottomBar = {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f)
-            ) {
-                AppRoute.bottomNavItems.forEach { item ->
-                    val selected = currentDestination
-                        ?.hierarchy
-                        ?.any { it.route == item.route } == true
+            if (!isProfileRoute) {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f)
+                ) {
+                    AppRoute.bottomNavItems.forEach { item ->
+                        val selected = currentDestination
+                            ?.hierarchy
+                            ?.any { it.route == item.route } == true
 
-                    NavigationBarItem(
-                        selected = selected,
-                        onClick = {
-                            if (!selected) {
-                                navController.navigate(item.route) {
-                                    launchSingleTop = true
-                                    restoreState = true
-                                    popUpTo(AppRoute.Dashboard.route) {
-                                        saveState = true
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick = {
+                                if (!selected) {
+                                    navController.navigate(item.route) {
+                                        launchSingleTop = true
+                                        restoreState = true
+                                        popUpTo(AppRoute.Dashboard.route) {
+                                            saveState = true
+                                        }
                                     }
                                 }
-                            }
-                        },
-                        icon = {
-                            Icon(
-                                imageVector = item.icon,
-                                contentDescription = item.label
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = item.icon,
+                                    contentDescription = item.label
+                                )
+                            },
+                            label = { Text(text = item.label) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                disabledIconColor = Color.Transparent,
+                                disabledTextColor = Color.Transparent
                             )
-                        },
-                        label = { Text(text = item.label) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledIconColor = Color.Transparent,
-                            disabledTextColor = Color.Transparent
                         )
-                    )
+                    }
                 }
             }
         }
@@ -77,11 +81,13 @@ fun MainScreen(onSignOut: () -> Unit = {}) {
             startDestination = AppRoute.Dashboard.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(AppRoute.Dashboard.route) { DashboardScreen(onSignOut = onSignOut) }
+            composable(AppRoute.Dashboard.route) {
+                DashboardScreen(onProfileClick = { navController.navigate(AppRoute.Profile.route) })
+            }
             composable(AppRoute.Income.route) { IncomeScreen() }
             composable(AppRoute.Expenses.route) { ExpenseScreen() }
             composable(AppRoute.Budget.route) { BudgetScreen() }
+            composable(AppRoute.Profile.route) { ProfileScreen(onLogout = onSignOut) }
         }
     }
 }
-
