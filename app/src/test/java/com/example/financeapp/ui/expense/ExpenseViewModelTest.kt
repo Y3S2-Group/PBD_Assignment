@@ -53,6 +53,17 @@ class ExpenseViewModelTest {
 
         override suspend fun sumAmountLkrBetween(startInclusive: Long, endInclusive: Long): Double =
             entries.filter { it.timestamp in startInclusive..endInclusive }.sumOf { it.amountLkr }
+
+        override suspend fun sumAmountLkrByCategoryBetween(start: Long, end: Long): Map<String, Double> =
+            entries.filter { it.timestamp in start..end }
+                .groupBy { it.category }
+                .mapValues { (_, list) -> list.sumOf { it.amountLkr } }
+
+        override suspend fun sumAmountLkrBySpendingTypeBetween(
+            spendingType: String, start: Long, end: Long
+        ): Double = entries
+            .filter { it.spendingType == spendingType && it.timestamp in start..end }
+            .sumOf { it.amountLkr }
     }
 
     private fun seededRepository(): ExpenseRepository = FakeExpenseRepository(
