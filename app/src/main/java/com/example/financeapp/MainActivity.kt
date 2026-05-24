@@ -9,8 +9,8 @@ import androidx.compose.runtime.getValue
 import com.example.financeapp.data.local.SettingsRepository
 import com.example.financeapp.data.local.SettingsState
 import com.example.financeapp.ui.navigation.AppNavigation
-import com.example.financeapp.ui.navigation.AppNavigation
 import com.example.financeapp.ui.theme.AppTheme
+import com.example.financeapp.util.FinancialAlertsScheduler
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -22,20 +22,22 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Schedule the daily 8 PM spending digest notification.
+        // setRepeating makes this idempotent — calling it again just updates the alarm.
+        FinancialAlertsScheduler.scheduleDailyDigest(applicationContext)
+
         setContent {
             val settings by settingsRepository.settings.collectAsState(
                 initial = SettingsState(
                     isDarkMode = true,
                     language = "en",
                     biometricsEnabled = false,
-                    selectedAvatarId = "avatar_1",
+                    selectedAvatarId = "",
                 )
             )
             AppTheme(darkTheme = settings.isDarkMode) {
-                AppNavigation(
-                    biometricsEnabled = settings.biometricsEnabled,
-                    avatarId = settings.selectedAvatarId,
-                )
+                AppNavigation(biometricsEnabled = settings.biometricsEnabled)
             }
         }
     }
