@@ -85,6 +85,7 @@ import com.example.financeapp.domain.model.BudgetCategorySummary
 import com.example.financeapp.domain.model.Goal
 import com.example.financeapp.ui.components.GlobalTopAppBar
 import com.example.financeapp.ui.dashboard.DashboardViewModel
+import com.example.financeapp.ui.notifications.NotificationViewModel
 import java.text.NumberFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -106,6 +107,9 @@ fun BudgetScreen(
     val state by viewModel.state.collectAsState()
     val dashVm: DashboardViewModel = hiltViewModel()
     val dashState by dashVm.state.collectAsState()
+    val notifVm: NotificationViewModel = hiltViewModel()
+    val notifState by notifVm.state.collectAsState()
+    val unreadCount = notifState.notifications.count { !it.isRead }
     val scrollState = rememberScrollState()
 
     val goal = state.activeGoal
@@ -140,6 +144,7 @@ fun BudgetScreen(
             subtitle = null,
             healthScore = dashState.healthScore,
             avatarId = avatarId,
+            unreadCount = unreadCount,
             onProfileClick = onProfileClick,
             onNotificationClick = onNotificationClick,
         )

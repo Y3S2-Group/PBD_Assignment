@@ -1,5 +1,10 @@
 package com.example.financeapp.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.financeapp.util.AvatarManager
@@ -38,6 +45,8 @@ fun GlobalTopAppBar(
     subtitle: String? = null,
     healthScore: Int,
     avatarId: String? = null,
+    /** Pass the count of unread in-app notifications. Shows a red badge when > 0. */
+    unreadCount: Int = 0,
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit,
 ) {
@@ -73,19 +82,60 @@ fun GlobalTopAppBar(
         Row(verticalAlignment = Alignment.CenterVertically) {
             HealthScoreBadge(score = healthScore)
             Spacer(modifier = Modifier.width(8.dp))
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier
-                    .size(40.dp)
-                    .clickable { onNotificationClick() }
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Outlined.Notifications,
-                        contentDescription = "Notifications",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+            // Notification bell with unread badge
+            Box {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clickable { onNotificationClick() }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Outlined.Notifications,
+                            contentDescription = "Notifications",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                // Red dot badge — animates in/out
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = unreadCount > 0,
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    enter = scaleIn(spring(stiffness = Spring.StiffnessMediumLow)),
+                    exit = scaleOut(spring(stiffness = Spring.StiffnessMediumLow)),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .offset(x = 2.dp, y = (-2).dp)
+                            .size(if (unreadCount > 9) 18.dp else 14.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFE53935))       // vivid red
+                            .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (unreadCount <= 9) {
+                            Text(
+                                text = unreadCount.toString(),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                color = Color.White,
+                            )
+                        } else {
+                            Text(
+                                text = "9+",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 7.sp,
+                                    fontWeight = FontWeight.Bold,
+                                ),
+                                color = Color.White,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -174,4 +224,3 @@ private fun CircularProgressRing(
         )
     }
 }
-

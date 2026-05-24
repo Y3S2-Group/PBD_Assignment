@@ -68,6 +68,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.financeapp.domain.model.Expense
 import com.example.financeapp.ui.components.GlobalTopAppBar
 import com.example.financeapp.ui.dashboard.DashboardViewModel
+import com.example.financeapp.ui.notifications.NotificationViewModel
 import java.text.NumberFormat
 import java.util.Locale
 import java.util.UUID
@@ -82,6 +83,9 @@ fun ExpenseScreen(
     val state by viewModel.state.collectAsState()
     val dashVm: DashboardViewModel = hiltViewModel()
     val dashState by dashVm.state.collectAsState()
+    val notifVm: NotificationViewModel = hiltViewModel()
+    val notifState by notifVm.state.collectAsState()
+    val unreadCount = notifState.notifications.count { !it.isRead }
     var showQuickAdd by remember { mutableStateOf(false) }
 
     // Auto-open overlay when edit state is set
@@ -96,6 +100,7 @@ fun ExpenseScreen(
             subtitle = null,
             healthScore = dashState.healthScore,
             avatarId = avatarId,
+            unreadCount = unreadCount,
             onProfileClick = onProfileClick,
             onNotificationClick = onNotificationClick,
         )
