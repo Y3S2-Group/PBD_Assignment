@@ -62,6 +62,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.financeapp.ui.auth.AuthViewModel
 import com.example.financeapp.ui.components.GlobalTopAppBar
+import com.example.financeapp.ui.theme.AppTheme
+import com.example.financeapp.ui.dashboard.DashboardViewModel
 import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.abs
@@ -75,6 +77,7 @@ private val CATEGORY_PALETTE = listOf(
 
 @Composable
 fun DashboardScreen(
+    avatarId: String,
     onProfileClick: () -> Unit = {},
     onNotificationClick: () -> Unit = {},
 ) {
@@ -104,6 +107,14 @@ fun DashboardScreen(
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 120.dp)
         ) {
+            GlobalTopAppBar(
+                title = "Vault",
+                subtitle = "Hey $firstName,",
+                healthScore = state.healthScore,
+                avatarId = avatarId,
+                onProfileClick = onProfileClick,
+                onNotificationClick = onNotificationClick,
+            )
             Spacer(modifier = Modifier.height(24.dp))
 
             // FR1 — at-a-glance balance cards

@@ -66,6 +66,7 @@ import java.util.UUID
 
 @Composable
 fun ExpenseScreen(
+    avatarId: String,
     onProfileClick: () -> Unit = {},
     onNotificationClick: () -> Unit = {},
     viewModel: ExpenseViewModel = hiltViewModel(),
@@ -89,6 +90,16 @@ fun ExpenseScreen(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 120.dp)
         ) {
+            item {
+                GlobalTopAppBar(
+                    title = "Expenses",
+                    subtitle = null,
+                    healthScore = dashState.healthScore,
+                    avatarId = avatarId,
+                    onProfileClick = onProfileClick,
+                    onNotificationClick = onNotificationClick,
+                )
+            }
             item { ExpenseSummaryCard(totalSpent = state.expenses.sumOf { it.amountLkr }) }
             item {
                 CategoryFilterRow(

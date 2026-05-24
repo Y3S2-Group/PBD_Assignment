@@ -87,7 +87,6 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.datastore.preferences)
     implementation("androidx.datastore:datastore-preferences:1.1.1")
-    implementation(libs.coil.compose)
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp)
