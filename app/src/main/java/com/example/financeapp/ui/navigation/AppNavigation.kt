@@ -49,7 +49,10 @@ import com.example.financeapp.util.BiometricHelper
 import com.example.financeapp.util.BiometricStatus
 
 @Composable
-fun AppNavigation(biometricsEnabled: Boolean = false) {
+fun AppNavigation(
+    biometricsEnabled: Boolean = false,
+    avatarId: String = "avatar_1",
+) {
     val navController = rememberNavController()
     val authViewModel: AuthViewModel = hiltViewModel()
     val context = LocalContext.current
@@ -150,6 +153,7 @@ fun AppNavigation(biometricsEnabled: Boolean = false) {
             ) {
                 composable(AppRoute.ROUTE_MAIN_CONTENT) {
                     MainScreen(
+                        avatarId = avatarId,
                         onSignOut = {
                             // Explicit logout (from the Profile page).
                             // ProfileViewModel.logout() already signed out Firebase and cleared

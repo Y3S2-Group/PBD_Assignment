@@ -97,6 +97,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun IncomeScreen(
+    avatarId: String,
     onProfileClick: () -> Unit = {},
     onNotificationClick: () -> Unit = {},
     viewModel: IncomeViewModel = hiltViewModel(),
@@ -131,7 +132,7 @@ fun IncomeScreen(
                     title = "Income",
                     subtitle = null,
                     healthScore = dashState.healthScore,
-                    localProfilePhotoPath = null,
+                    avatarId = avatarId,
                     onProfileClick = onProfileClick,
                     onNotificationClick = onNotificationClick,
                 )

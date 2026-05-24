@@ -5,5 +5,6 @@ data class UserProfile(
     val displayName: String,
     val email: String,
     val memberSince: Long,
+    val avatarId: String = "avatar_1",
 )
 

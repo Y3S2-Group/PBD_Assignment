@@ -27,17 +27,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import java.io.File
+import com.example.financeapp.util.AvatarManager
 
 @Composable
 fun GlobalTopAppBar(
     title: String,
     subtitle: String? = null,
     healthScore: Int,
-    localProfilePhotoPath: String?,
+    avatarId: String? = null,
     onProfileClick: () -> Unit,
     onNotificationClick: () -> Unit,
 ) {
@@ -50,7 +50,7 @@ fun GlobalTopAppBar(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             ProfileAvatar(
-                localProfilePhotoPath = localProfilePhotoPath,
+                avatarId = avatarId,
                 onProfileClick = onProfileClick
             )
             Spacer(modifier = Modifier.width(12.dp))
@@ -94,7 +94,7 @@ fun GlobalTopAppBar(
 
 @Composable
 private fun ProfileAvatar(
-    localProfilePhotoPath: String?,
+    avatarId: String?,
     onProfileClick: () -> Unit,
 ) {
     Box(
@@ -110,21 +110,13 @@ private fun ProfileAvatar(
             .clickable { onProfileClick() },
         contentAlignment = Alignment.Center
     ) {
-        if (!localProfilePhotoPath.isNullOrBlank()) {
-            AsyncImage(
-                model = File(localProfilePhotoPath),
-                contentDescription = "Profile photo",
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-            )
-        } else {
-            Icon(
-                imageVector = Icons.Outlined.Person,
-                contentDescription = "Profile placeholder",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        androidx.compose.foundation.Image(
+            painter = painterResource(id = AvatarManager.getAvatarResource(avatarId)),
+            contentDescription = "Profile photo",
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+        )
     }
 }
 
