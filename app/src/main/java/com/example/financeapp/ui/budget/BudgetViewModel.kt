@@ -1,5 +1,6 @@
 package com.example.financeapp.ui.budget
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.domain.model.BudgetCategory
@@ -9,7 +10,9 @@ import com.example.financeapp.domain.model.SavingsDeposit
 import com.example.financeapp.domain.repository.BudgetRepository
 import com.example.financeapp.util.AppEventBus
 import com.example.financeapp.util.DataChangeEvent
+import com.example.financeapp.util.FinancialAlertsService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Instant
 import java.time.YearMonth
 import java.time.ZoneId
@@ -29,6 +32,7 @@ enum class GoalStatus { ON_TRACK, AHEAD, BEHIND }
 class BudgetViewModel @Inject constructor(
     private val repository: BudgetRepository,
     private val eventBus: AppEventBus,
+    @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BudgetUiState())
@@ -112,6 +116,7 @@ class BudgetViewModel @Inject constructor(
             repository.upsertGoal(goal)
             refresh()
             eventBus.send(DataChangeEvent.BUDGET_GOAL)
+            FinancialAlertsService.startAlertCheck(appContext)
         }
     }
 
@@ -130,6 +135,7 @@ class BudgetViewModel @Inject constructor(
             )
             refresh()
             eventBus.send(DataChangeEvent.BUDGET_GOAL)
+            FinancialAlertsService.startAlertCheck(appContext)
         }
     }
 
@@ -150,6 +156,7 @@ class BudgetViewModel @Inject constructor(
             repository.updateGoalSavings(currentGoal.id, currentGoal.currentSavings + amount)
             refresh()
             eventBus.send(DataChangeEvent.BUDGET_GOAL)
+            FinancialAlertsService.startAlertCheck(appContext)
         }
     }
 
@@ -166,6 +173,7 @@ class BudgetViewModel @Inject constructor(
             )
             refresh(monthYear)
             eventBus.send(DataChangeEvent.BUDGET_GOAL)
+            FinancialAlertsService.startAlertCheck(appContext)
         }
     }
 

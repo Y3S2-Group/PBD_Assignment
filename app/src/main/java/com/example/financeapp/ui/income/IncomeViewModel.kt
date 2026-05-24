@@ -10,6 +10,7 @@ import com.example.financeapp.domain.repository.ExchangeRateRepository
 import com.example.financeapp.domain.repository.IncomeRepository
 import com.example.financeapp.util.AppEventBus
 import com.example.financeapp.util.DataChangeEvent
+import com.example.financeapp.util.FinancialAlertsService
 import com.example.financeapp.util.RecurringIncomeReminderService
 import com.example.financeapp.util.RecurringIncomeScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -139,6 +140,7 @@ class IncomeViewModel @Inject constructor(
                 cachedEntries = repository.getAllIncomes()
                 updateForPeriod(cachedEntries)
                 eventBus.send(DataChangeEvent.INCOME)
+                FinancialAlertsService.startAlertCheck(appContext)
             } catch (e: Exception) {
                 val current = _state.value
                 if (current is IncomeUiState.Success) {
@@ -172,6 +174,7 @@ class IncomeViewModel @Inject constructor(
                 cachedEntries = repository.getAllIncomes()
                 updateForPeriod(cachedEntries)
                 eventBus.send(DataChangeEvent.INCOME)
+                FinancialAlertsService.startAlertCheck(appContext)
             } catch (e: Exception) {
                 val current = _state.value
                 if (current is IncomeUiState.Success) {
@@ -194,6 +197,7 @@ class IncomeViewModel @Inject constructor(
             cachedEntries = repository.getAllIncomes()
             updateForPeriod(cachedEntries)
             eventBus.send(DataChangeEvent.INCOME)
+            FinancialAlertsService.startAlertCheck(appContext)
         }
     }
 

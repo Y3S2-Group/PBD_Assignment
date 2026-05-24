@@ -1,12 +1,15 @@
 package com.example.financeapp.ui.expense
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.domain.model.Expense
 import com.example.financeapp.domain.repository.ExpenseRepository
 import com.example.financeapp.util.AppEventBus
 import com.example.financeapp.util.DataChangeEvent
+import com.example.financeapp.util.FinancialAlertsService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +21,7 @@ import javax.inject.Inject
 class ExpenseViewModel @Inject constructor(
     private val repository: ExpenseRepository,
     private val eventBus: AppEventBus,
+    @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ExpenseUiState())
     val state: StateFlow<ExpenseUiState> = _state.asStateFlow()
@@ -33,6 +37,7 @@ class ExpenseViewModel @Inject constructor(
             repository.insertExpense(expense)
             refreshExpenses()
             eventBus.send(DataChangeEvent.EXPENSE)
+            FinancialAlertsService.startAlertCheck(appContext)
         }
     }
 
@@ -72,6 +77,7 @@ class ExpenseViewModel @Inject constructor(
             _state.value = _state.value.copy(expenseToEdit = null)
             refreshExpenses()
             eventBus.send(DataChangeEvent.EXPENSE)
+            FinancialAlertsService.startAlertCheck(appContext)
         }
     }
 
