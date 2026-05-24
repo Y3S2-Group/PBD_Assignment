@@ -2,9 +2,11 @@ package com.example.financeapp.data.repository
 
 import com.example.financeapp.data.local.IncomeDao
 import com.example.financeapp.data.local.RecurringIncomeDao
+import com.example.financeapp.data.remote.FirestoreIncomeRepository
 import com.example.financeapp.domain.model.Income
 import com.example.financeapp.domain.model.RecurringIncome
 import com.example.financeapp.domain.repository.IncomeRepository
+import com.google.firebase.auth.FirebaseAuth
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -12,20 +14,39 @@ import kotlinx.coroutines.withContext
 class IncomeRepositoryImpl @Inject constructor(
     private val incomeDao: IncomeDao,
     private val recurringIncomeDao: RecurringIncomeDao,
+    private val firebaseAuth: FirebaseAuth,
+    private val firestoreRepo: FirestoreIncomeRepository,
 ) : IncomeRepository {
+
+    private val uid: String? get() = firebaseAuth.currentUser?.uid
 
     // ── Income CRUD ───────────────────────────────────────────────────────────
 
     override suspend fun insertIncome(income: Income) {
-        withContext(Dispatchers.IO) { incomeDao.insert(income) }
+        withContext(Dispatchers.IO) {
+            incomeDao.insert(income)
+            uid?.let { id ->
+                try { firestoreRepo.saveIncome(id, income) } catch (e: Exception) { /* offline */ }
+            }
+        }
     }
 
     override suspend fun updateIncome(income: Income) {
-        withContext(Dispatchers.IO) { incomeDao.update(income) }
+        withContext(Dispatchers.IO) {
+            incomeDao.update(income)
+            uid?.let { id ->
+                try { firestoreRepo.saveIncome(id, income) } catch (e: Exception) { /* offline */ }
+            }
+        }
     }
 
     override suspend fun deleteIncome(id: String) {
-        withContext(Dispatchers.IO) { incomeDao.deleteById(id) }
+        withContext(Dispatchers.IO) {
+            incomeDao.deleteById(id)
+            uid?.let { userId ->
+                try { firestoreRepo.deleteIncome(userId, id) } catch (e: Exception) { /* offline */ }
+            }
+        }
     }
 
     override suspend fun getAllIncomes(): List<Income> =
@@ -45,7 +66,12 @@ class IncomeRepositoryImpl @Inject constructor(
     // ── Recurring income ──────────────────────────────────────────────────────
 
     override suspend fun insertRecurringIncome(recurring: RecurringIncome) {
-        withContext(Dispatchers.IO) { recurringIncomeDao.insert(recurring) }
+        withContext(Dispatchers.IO) {
+            recurringIncomeDao.insert(recurring)
+            uid?.let { id ->
+                try { firestoreRepo.saveRecurringIncome(id, recurring) } catch (e: Exception) { /* offline */ }
+            }
+        }
     }
 
     override suspend fun getActiveRecurringIncomes(): List<RecurringIncome> =
@@ -55,10 +81,20 @@ class IncomeRepositoryImpl @Inject constructor(
         withContext(Dispatchers.IO) { recurringIncomeDao.getAll() }
 
     override suspend fun deactivateRecurringIncome(id: String) {
-        withContext(Dispatchers.IO) { recurringIncomeDao.deactivate(id) }
+        withContext(Dispatchers.IO) {
+            recurringIncomeDao.deactivate(id)
+            uid?.let { userId ->
+                try { firestoreRepo.deactivateRecurringIncome(userId, id) } catch (e: Exception) { /* offline */ }
+            }
+        }
     }
 
     override suspend fun deleteRecurringIncome(id: String) {
-        withContext(Dispatchers.IO) { recurringIncomeDao.deleteById(id) }
+        withContext(Dispatchers.IO) {
+            recurringIncomeDao.deleteById(id)
+            uid?.let { userId ->
+                try { firestoreRepo.deleteRecurringIncome(userId, id) } catch (e: Exception) { /* offline */ }
+            }
+        }
     }
 }

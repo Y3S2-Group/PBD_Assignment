@@ -2,10 +2,12 @@ package com.example.financeapp.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.financeapp.data.sync.FirestoreSyncService
 import com.example.financeapp.domain.repository.BudgetRepository
 import com.example.financeapp.domain.repository.ExpenseRepository
 import com.example.financeapp.domain.repository.IncomeRepository
 import com.example.financeapp.util.AppEventBus
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Instant
 import java.time.YearMonth
@@ -56,12 +58,18 @@ class DashboardViewModel @Inject constructor(
     private val expenseRepo: ExpenseRepository,
     private val budgetRepo: BudgetRepository,
     private val eventBus: AppEventBus,
+    private val syncService: FirestoreSyncService,
+    private val firebaseAuth: FirebaseAuth,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DashboardUiState())
     val state: StateFlow<DashboardUiState> = _state.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            // Pull Firestore data into Room so the UI is up-to-date across devices.
+            firebaseAuth.currentUser?.uid?.let { syncService.syncAll(it) }
+        }
         refresh()
         // Re-run refresh whenever income, expenses, or budget/goal data changes in any screen.
         viewModelScope.launch {

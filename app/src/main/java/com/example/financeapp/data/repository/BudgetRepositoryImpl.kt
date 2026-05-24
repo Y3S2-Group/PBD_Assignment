@@ -5,10 +5,12 @@ import com.example.financeapp.data.local.ExpenseDao
 import com.example.financeapp.data.local.GoalDao
 import com.example.financeapp.data.local.IncomeDao
 import com.example.financeapp.data.local.SavingsDepositDao
+import com.example.financeapp.data.remote.FirestoreGoalRepository
 import com.example.financeapp.domain.model.BudgetCategory
 import com.example.financeapp.domain.model.Goal
 import com.example.financeapp.domain.model.SavingsDeposit
 import com.example.financeapp.domain.repository.BudgetRepository
+import com.google.firebase.auth.FirebaseAuth
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -21,11 +23,20 @@ class BudgetRepositoryImpl @Inject constructor(
     private val budgetDao: BudgetDao,
     private val expenseDao: ExpenseDao,
     private val savingsDepositDao: SavingsDepositDao,
-    private val incomeDao: IncomeDao
+    private val incomeDao: IncomeDao,
+    private val firebaseAuth: FirebaseAuth,
+    private val firestoreGoalRepo: FirestoreGoalRepository,
 ) : BudgetRepository {
 
+    private val uid: String? get() = firebaseAuth.currentUser?.uid
+
     override suspend fun upsertGoal(goal: Goal) {
-        withContext(Dispatchers.IO) { goalDao.insert(goal) }
+        withContext(Dispatchers.IO) {
+            goalDao.insert(goal)
+            uid?.let { id ->
+                try { firestoreGoalRepo.saveGoal(id, goal) } catch (e: Exception) { /* offline */ }
+            }
+        }
     }
 
     override suspend fun getLatestGoal(): Goal? = withContext(Dispatchers.IO) {
@@ -33,11 +44,21 @@ class BudgetRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateGoalSavings(id: String, newSavings: Double) {
-        withContext(Dispatchers.IO) { goalDao.updateCurrentSavings(id, newSavings) }
+        withContext(Dispatchers.IO) {
+            goalDao.updateCurrentSavings(id, newSavings)
+            uid?.let { userId ->
+                try { firestoreGoalRepo.updateGoalSavings(userId, id, newSavings) } catch (e: Exception) { /* offline */ }
+            }
+        }
     }
 
     override suspend fun upsertBudgetCategory(category: BudgetCategory) {
-        withContext(Dispatchers.IO) { budgetDao.insert(category) }
+        withContext(Dispatchers.IO) {
+            budgetDao.insert(category)
+            uid?.let { id ->
+                try { firestoreGoalRepo.saveBudgetCategory(id, category) } catch (e: Exception) { /* offline */ }
+            }
+        }
     }
 
     override suspend fun getBudgetCategoriesForMonth(monthYear: String): List<BudgetCategory> =
@@ -51,7 +72,12 @@ class BudgetRepositoryImpl @Inject constructor(
         }
 
     override suspend fun insertDeposit(deposit: SavingsDeposit) {
-        withContext(Dispatchers.IO) { savingsDepositDao.insert(deposit) }
+        withContext(Dispatchers.IO) {
+            savingsDepositDao.insert(deposit)
+            uid?.let { id ->
+                try { firestoreGoalRepo.saveDeposit(id, deposit) } catch (e: Exception) { /* offline */ }
+            }
+        }
     }
 
     override suspend fun getDepositsForGoal(goalId: String): List<SavingsDeposit> =
