@@ -38,7 +38,37 @@ class FirestoreUserRepository @Inject constructor(
                 .get()
                 .addOnSuccessListener { snapshot ->
                     if (!snapshot.exists()) {
-                        continuation.resume(null)
+                        val authUser = firebaseAuth.currentUser
+                        if (authUser == null) {
+                            continuation.resume(null)
+                            return@addOnSuccessListener
+                        }
+                        val email = authUser.email.orEmpty()
+                        val displayName = authUser.displayName
+                            ?.takeIf { it.isNotBlank() }
+                            ?: email.substringBefore("@").ifBlank { "User" }
+                        val memberSince = authUser.metadata?.creationTimestamp
+                            ?: System.currentTimeMillis()
+                        val payload = mapOf(
+                            "uid" to uid,
+                            "displayName" to displayName,
+                            "email" to email,
+                            "memberSince" to memberSince,
+                        )
+                        firestore.collection("users")
+                            .document(uid)
+                            .set(payload)
+                            .addOnSuccessListener {
+                                continuation.resume(
+                                    UserProfile(
+                                        uid = uid,
+                                        displayName = displayName,
+                                        email = email,
+                                        memberSince = memberSince,
+                                    )
+                                )
+                            }
+                            .addOnFailureListener { continuation.resumeWithException(it) }
                         return@addOnSuccessListener
                     }
                     val displayName = snapshot.getString("displayName") ?: ""
@@ -56,4 +86,3 @@ class FirestoreUserRepository @Inject constructor(
                 .addOnFailureListener { continuation.resumeWithException(it) }
         }
 }
-

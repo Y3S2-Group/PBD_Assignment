@@ -9,16 +9,21 @@ import java.io.File
 import java.io.IOException
 
 object LocalImageStorage {
-    suspend fun copyToInternalStorage(context: Context, sourceUri: Uri): String =
+    suspend fun copyToInternalStorage(
+        context: Context,
+        sourceUri: Uri,
+        uid: String,
+    ): String =
         withContext(Dispatchers.IO) {
             val contentResolver = context.contentResolver
             val mimeType = contentResolver.getType(sourceUri)
             val extension = MimeTypeMap.getSingleton()
                 .getExtensionFromMimeType(mimeType)
                 ?: "jpg"
+            val safeUid = uid.ifBlank { "anonymous" }
             val targetFile = File(
                 context.filesDir,
-                "profile_${System.currentTimeMillis()}.$extension",
+                "${safeUid}_profile.$extension",
             )
 
             contentResolver.openInputStream(sourceUri)?.use { input ->
@@ -30,4 +35,3 @@ object LocalImageStorage {
             targetFile.absolutePath
         }
 }
-
