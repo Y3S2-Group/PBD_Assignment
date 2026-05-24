@@ -72,6 +72,17 @@ import java.text.NumberFormat
 import java.util.Locale
 import java.util.UUID
 
+private val EXPENSE_CATEGORIES = listOf(
+    CategoryOption("Coffee", Icons.Outlined.LocalCafe),
+    CategoryOption("Food", Icons.Outlined.Restaurant),
+    CategoryOption("Transport", Icons.Outlined.DirectionsCar),
+    CategoryOption("Shop", Icons.Outlined.ShoppingBag),
+    CategoryOption("Subs", Icons.Outlined.Subscriptions),
+    CategoryOption("Utility", Icons.Outlined.Bolt),
+    CategoryOption("Commute", Icons.Outlined.Commute),
+    CategoryOption("Other", Icons.Outlined.MoreHoriz)
+)
+
 @Composable
 fun ExpenseScreen(
     avatarId: String,
@@ -236,12 +247,12 @@ private fun CategoryFilterRow(
                 onClick = { onCategorySelected("All") }
             )
         }
-        listOf("Food", "Transport", "Tech", "Subs", "Travel").forEach { label ->
+        EXPENSE_CATEGORIES.forEach { option ->
             item {
                 FilterPill(
-                    label = label,
-                    selected = selectedCategory.equals(label, ignoreCase = true),
-                    onClick = { onCategorySelected(label) }
+                    label = option.label,
+                    selected = selectedCategory.equals(option.label, ignoreCase = true),
+                    onClick = { onCategorySelected(option.label) }
                 )
             }
         }
@@ -596,24 +607,13 @@ private fun CategoryScrollRow(
     selectedCategory: String,
     onCategorySelected: (String) -> Unit
 ) {
-    val categories = listOf(
-        CategoryOption("Coffee", Icons.Outlined.LocalCafe),
-        CategoryOption("Food", Icons.Outlined.Restaurant),
-        CategoryOption("Transport", Icons.Outlined.DirectionsCar),
-        CategoryOption("Shop", Icons.Outlined.ShoppingBag),
-        CategoryOption("Subs", Icons.Outlined.Subscriptions),
-        CategoryOption("Utility", Icons.Outlined.Bolt),
-        CategoryOption("Commute", Icons.Outlined.Commute),
-        CategoryOption("Other", Icons.Outlined.MoreHoriz)
-    )
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        categories.forEach { option ->
+        EXPENSE_CATEGORIES.forEach { option ->
             CategoryIcon(
                 option = option,
                 selected = selectedCategory == option.label,
