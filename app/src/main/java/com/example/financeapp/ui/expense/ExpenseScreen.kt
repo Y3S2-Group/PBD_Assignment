@@ -76,20 +76,19 @@ fun ExpenseScreen(
     var showQuickAdd by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+        GlobalTopAppBar(
+            title = "Expenses",
+            subtitle = null,
+            healthScore = dashState.healthScore,
+            localProfilePhotoPath = null,
+            onProfileClick = onProfileClick,
+            onNotificationClick = onNotificationClick,
+        )
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 120.dp)
         ) {
-            item {
-                GlobalTopAppBar(
-                    title = "Expenses",
-                    subtitle = null,
-                    healthScore = dashState.healthScore,
-                    localProfilePhotoPath = null,
-                    onProfileClick = onProfileClick,
-                    onNotificationClick = onNotificationClick,
-                )
-            }
             item { ExpenseSummaryCard(totalSpent = state.expenses.sumOf { it.amountLkr }) }
             item {
                 CategoryFilterRow(
@@ -98,6 +97,7 @@ fun ExpenseScreen(
                 )
             }
             item { ExpenseActivityList(expenses = state.filteredExpenses) }
+        }
         }
 
         FloatingActionButton(

@@ -133,14 +133,7 @@ fun BudgetScreen(
     var editingCategory by rememberSaveable { mutableStateOf("") }
     var editingCategoryAmount by rememberSaveable { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(horizontal = 20.dp, vertical = 12.dp)
-            .padding(bottom = 120.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         GlobalTopAppBar(
             title = "Budget",
             subtitle = null,
@@ -149,6 +142,14 @@ fun BudgetScreen(
             onProfileClick = onProfileClick,
             onNotificationClick = onNotificationClick,
         )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 120.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
 
         if (goal != null) {
             SavingsGoalCard(
@@ -203,6 +204,7 @@ fun BudgetScreen(
                     goal
                 )
             )
+        }
         }
     }
 

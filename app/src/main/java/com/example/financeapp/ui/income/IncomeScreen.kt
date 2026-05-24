@@ -119,23 +119,22 @@ fun IncomeScreen(
     val incomes = (state as? IncomeUiState.Success)?.entries.orEmpty()
 
     Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+        GlobalTopAppBar(
+            title = "Income",
+            subtitle = null,
+            healthScore = dashState.healthScore,
+            localProfilePhotoPath = null,
+            onProfileClick = onProfileClick,
+            onNotificationClick = onNotificationClick,
+        )
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                start = 20.dp, end = 20.dp, top = 16.dp, bottom = 120.dp
+                start = 16.dp, end = 16.dp, bottom = 120.dp
             ),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            item {
-                GlobalTopAppBar(
-                    title = "Income",
-                    subtitle = null,
-                    healthScore = dashState.healthScore,
-                    localProfilePhotoPath = null,
-                    onProfileClick = onProfileClick,
-                    onNotificationClick = onNotificationClick,
-                )
-            }
             item {
                 IncomeHeader(
                     totalLkr = totalLkr,
@@ -169,6 +168,7 @@ fun IncomeScreen(
                     onDelete = { income -> deleteTarget = income },
                 )
             }
+        }
         }
 
         // FAB — add income

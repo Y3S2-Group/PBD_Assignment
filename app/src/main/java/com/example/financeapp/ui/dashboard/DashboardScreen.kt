@@ -88,7 +88,15 @@ fun DashboardScreen(
         email.substringBefore("@").ifBlank { "User" }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        GlobalTopAppBar(
+            title = "Vault",
+            subtitle = "Hey $firstName,",
+            healthScore = state.healthScore,
+            localProfilePhotoPath = null,
+            onProfileClick = onProfileClick,
+            onNotificationClick = onNotificationClick,
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -96,14 +104,6 @@ fun DashboardScreen(
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 120.dp)
         ) {
-            GlobalTopAppBar(
-                title = "Vault",
-                subtitle = "Hey $firstName,",
-                healthScore = state.healthScore,
-                localProfilePhotoPath = null,
-                onProfileClick = onProfileClick,
-                onNotificationClick = onNotificationClick,
-            )
             Spacer(modifier = Modifier.height(24.dp))
 
             // FR1 — at-a-glance balance cards
