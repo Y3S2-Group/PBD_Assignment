@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import com.example.financeapp.data.local.SettingsRepository
 import com.example.financeapp.data.local.SettingsState
 import com.example.financeapp.ui.navigation.AppNavigation
+import com.example.financeapp.ui.navigation.AppNavigation
 import com.example.financeapp.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -27,11 +28,14 @@ class MainActivity : FragmentActivity() {
                     isDarkMode = true,
                     language = "en",
                     biometricsEnabled = false,
-                    localProfilePhotoPath = "",
+                    selectedAvatarId = "avatar_1",
                 )
             )
             AppTheme(darkTheme = settings.isDarkMode) {
-                AppNavigation(biometricsEnabled = settings.biometricsEnabled)
+                AppNavigation(
+                    biometricsEnabled = settings.biometricsEnabled,
+                    avatarId = settings.selectedAvatarId,
+                )
             }
         }
     }

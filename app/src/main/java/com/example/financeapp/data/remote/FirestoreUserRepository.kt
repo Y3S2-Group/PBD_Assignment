@@ -14,13 +14,14 @@ class FirestoreUserRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
 ) : UserRepository {
 
-    override suspend fun saveUserDetails(uid: String, name: String, memberSince: Long) {
+    override suspend fun saveUserDetails(uid: String, name: String, memberSince: Long, avatarId: String) {
         val email = firebaseAuth.currentUser?.email ?: ""
         val payload = mapOf(
             "uid" to uid,
             "displayName" to name,
             "email" to email,
             "memberSince" to memberSince,
+            "avatarId" to avatarId,
         )
         suspendCancellableCoroutine { continuation ->
             firestore.collection("users")
@@ -54,6 +55,7 @@ class FirestoreUserRepository @Inject constructor(
                             "displayName" to displayName,
                             "email" to email,
                             "memberSince" to memberSince,
+                            "avatarId" to "avatar_1",
                         )
                         firestore.collection("users")
                             .document(uid)
@@ -65,6 +67,7 @@ class FirestoreUserRepository @Inject constructor(
                                         displayName = displayName,
                                         email = email,
                                         memberSince = memberSince,
+                                        avatarId = "avatar_1",
                                     )
                                 )
                             }
@@ -74,15 +77,27 @@ class FirestoreUserRepository @Inject constructor(
                     val displayName = snapshot.getString("displayName") ?: ""
                     val email = snapshot.getString("email") ?: ""
                     val memberSince = snapshot.getLong("memberSince") ?: 0L
+                    val avatarId = snapshot.getString("avatarId") ?: "avatar_1"
                     continuation.resume(
                         UserProfile(
                             uid = snapshot.id,
                             displayName = displayName,
                             email = email,
                             memberSince = memberSince,
+                            avatarId = avatarId,
                         )
                     )
                 }
                 .addOnFailureListener { continuation.resumeWithException(it) }
         }
+
+    override suspend fun updateAvatar(uid: String, avatarId: String) {
+        suspendCancellableCoroutine { continuation ->
+            firestore.collection("users")
+                .document(uid)
+                .update("avatarId", avatarId)
+                .addOnSuccessListener { continuation.resume(Unit) }
+                .addOnFailureListener { continuation.resumeWithException(it) }
+        }
+    }
 }

@@ -25,10 +25,14 @@ import com.example.financeapp.ui.notifications.NotificationScreen
 import com.example.financeapp.ui.profile.ProfileScreen
 
 @Composable
-fun MainScreen(onSignOut: () -> Unit = {}) {
+fun MainScreen(
+    onSignOut: () -> Unit = {},
+    avatarId: String,
+) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
+
     val hideBottomBar = currentDestination?.hierarchy?.any {
         it.route == AppRoute.Profile.route || it.route == AppRoute.Notifications.route
     } == true
@@ -86,24 +90,28 @@ fun MainScreen(onSignOut: () -> Unit = {}) {
         ) {
             composable(AppRoute.Dashboard.route) {
                 DashboardScreen(
+                    avatarId = avatarId,
                     onProfileClick = { navController.navigate(AppRoute.Profile.route) },
                     onNotificationClick = { navController.navigate(AppRoute.Notifications.route) }
                 )
             }
             composable(AppRoute.Income.route) {
                 IncomeScreen(
+                    avatarId = avatarId,
                     onProfileClick = { navController.navigate(AppRoute.Profile.route) },
                     onNotificationClick = { navController.navigate(AppRoute.Notifications.route) }
                 )
             }
             composable(AppRoute.Expenses.route) {
                 ExpenseScreen(
+                    avatarId = avatarId,
                     onProfileClick = { navController.navigate(AppRoute.Profile.route) },
                     onNotificationClick = { navController.navigate(AppRoute.Notifications.route) }
                 )
             }
             composable(AppRoute.Budget.route) {
                 BudgetScreen(
+                    avatarId = avatarId,
                     onProfileClick = { navController.navigate(AppRoute.Profile.route) },
                     onNotificationClick = { navController.navigate(AppRoute.Notifications.route) }
                 )
