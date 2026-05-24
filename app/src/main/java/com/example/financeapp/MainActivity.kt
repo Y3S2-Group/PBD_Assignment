@@ -26,7 +26,6 @@ class MainActivity : FragmentActivity() {
                 initial = SettingsState(
                     isDarkMode = true,
                     language = "en",
-                    currency = "LKR",
                     biometricsEnabled = false,
                     localProfilePhotoPath = "",
                 )

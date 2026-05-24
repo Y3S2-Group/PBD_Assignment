@@ -107,6 +107,7 @@ fun IncomeScreen(
     val selectedSourceFilter by viewModel.selectedSourceFilter.collectAsState()
     val recurringIncomes by viewModel.recurringIncomes.collectAsState()
     val periodChangePercent by viewModel.periodChangePercent.collectAsState()
+    val errorMessage = (state as? IncomeUiState.Success)?.errorMessage
 
     var showBottomSheet by remember { mutableStateOf(false) }
     var editingIncome by remember { mutableStateOf<Income?>(null) }
@@ -187,19 +188,27 @@ fun IncomeScreen(
                 onDismiss = {
                     showBottomSheet = false
                     editingIncome = null
+                    viewModel.clearError()
                 },
                 initialIncome = editingIncome,
-                defaultExchangeRate = { viewModel.defaultExchangeRateFor(it) },
+                errorMessage = errorMessage,
                 onSave = { req ->
                     viewModel.addIncome(req)
-                    showBottomSheet = false
                 },
                 onUpdate = { id, req ->
                     viewModel.updateIncome(id, req)
-                    showBottomSheet = false
-                    editingIncome = null
                 },
             )
+        }
+
+        // Close bottom sheet only if success and no error
+        LaunchedEffect(state) {
+            if (state is IncomeUiState.Success && (state as IncomeUiState.Success).errorMessage == null) {
+                if (showBottomSheet) {
+                    showBottomSheet = false
+                    editingIncome = null
+                }
+            }
         }
 
         if (deleteTarget != null) {
@@ -596,7 +605,7 @@ private fun IncomeListItem(income: Income, onEdit: () -> Unit, onDelete: () -> U
 private fun AddIncomeBottomSheet(
     onDismiss: () -> Unit,
     initialIncome: Income?,
-    defaultExchangeRate: (String) -> Double,
+    errorMessage: String?,
     onSave: (AddIncomeRequest) -> Unit,
     onUpdate: (String, AddIncomeRequest) -> Unit,
 ) {
@@ -637,18 +646,7 @@ private fun AddIncomeBottomSheet(
         }
     }
 
-    // Auto-fill exchange rate when currency changes
-    LaunchedEffect(selectedCurrency) {
-        if (exchangeRateText.isBlank() || exchangeRateText == "1.0") {
-            val rate = defaultExchangeRate(selectedCurrency)
-            exchangeRateText = if (selectedCurrency != "LKR") formatAmountInput(rate) else ""
-        }
-    }
-
-    val effectiveRate = exchangeRateText.toDoubleOrNull()
-        ?: defaultExchangeRate(selectedCurrency)
     val amountValue = amountText.toDoubleOrNull()
-    val lkrPreview = amountValue?.let { it * effectiveRate }
 
     // ── Date picker dialog ────────────────────────────────────────────────────
     if (showDatePicker) {
@@ -711,6 +709,16 @@ private fun AddIncomeBottomSheet(
 
             // Amount display + keypad
             IncomeAmountDisplay(currency = selectedCurrency, value = amountText)
+
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
+                )
+            }
+
             IncomeKeypad(value = amountText, onValueChange = { amountText = it })
 
             // Currency
@@ -733,30 +741,7 @@ private fun AddIncomeBottomSheet(
                 }
             }
 
-            // Exchange rate (only for non-LKR)
-            AnimatedVisibility(visible = selectedCurrency != "LKR") {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextField(
-                        value = exchangeRateText,
-                        onValueChange = { exchangeRateText = it },
-                        label = { Text("Exchange Rate (LKR per $selectedCurrency)") },
-                        placeholder = { Text("e.g. 300") },
-                        textStyle = MaterialTheme.typography.bodyMedium,
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    if (lkrPreview != null && selectedCurrency != "LKR") {
-                        Text(
-                            text = "≈ LKR ${formatAmount(lkrPreview)}",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.secondary,
-                        )
-                    }
-                }
-            }
+            // Exchange rate (removed)
 
             // Source
             LabelledSection("Source") {

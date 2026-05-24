@@ -67,7 +67,6 @@ class ProfileViewModel @Inject constructor(
                     localProfilePhotoPath = settings.localProfilePhotoPath,
                     isDarkMode = settings.isDarkMode,
                     language = settings.language,
-                    currency = settings.currency,
                     biometricsEnabled = settings.biometricsEnabled,
                     isLoading = loading,
                     errorMessage = error,
@@ -91,12 +90,6 @@ class ProfileViewModel @Inject constructor(
     fun setLanguage(language: String) {
         viewModelScope.launch {
             settingsRepository.setLanguage(language)
-        }
-    }
-
-    fun setCurrency(currency: String) {
-        viewModelScope.launch {
-            settingsRepository.setCurrency(currency)
         }
     }
 
@@ -125,7 +118,6 @@ data class ProfileUiState(
     val localProfilePhotoPath: String = "",
     val isDarkMode: Boolean = true,
     val language: String = "en",
-    val currency: String = "LKR",
     val biometricsEnabled: Boolean = false,
     val isLoading: Boolean = true,
     val errorMessage: String? = null,

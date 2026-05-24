@@ -30,7 +30,6 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Payments
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material.icons.outlined.Description
@@ -80,11 +79,9 @@ fun ProfileScreen(
     val context = LocalContext.current
     val activity = context as FragmentActivity
     var showLanguagePicker by remember { mutableStateOf(false) }
-    var showCurrencyPicker by remember { mutableStateOf(false) }
     // Biometric capability dialog
     var biometricDialogMessage by remember { mutableStateOf<String?>(null) }
     val languageLabel = languageLabelFor(state.language)
-    val currencyLabel = state.currency.ifBlank { "LKR" }
     val photoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri: Uri? ->
@@ -135,12 +132,6 @@ fun ProfileScreen(
                     icon = Icons.Outlined.Language,
                     value = languageLabel,
                     onClick = { showLanguagePicker = true }
-                ),
-                SettingItem.Navigation(
-                    label = "Currency",
-                    icon = Icons.Outlined.Payments,
-                    value = currencyLabel,
-                    onClick = { showCurrencyPicker = true }
                 )
             )
         )
@@ -232,22 +223,6 @@ fun ProfileScreen(
             onSelect = { value ->
                 viewModel.setLanguage(value)
                 showLanguagePicker = false
-            }
-        )
-    }
-
-    if (showCurrencyPicker) {
-        OptionPickerDialog(
-            title = "Select currency",
-            options = listOf(
-                "USD" to "USD",
-                "LKR" to "LKR",
-            ),
-            selectedValue = state.currency,
-            onDismiss = { showCurrencyPicker = false },
-            onSelect = { value ->
-                viewModel.setCurrency(value)
-                showCurrencyPicker = false
             }
         )
     }

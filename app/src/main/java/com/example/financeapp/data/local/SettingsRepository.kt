@@ -18,7 +18,6 @@ class SettingsRepository @Inject constructor(
         SettingsState(
             isDarkMode = prefs[Keys.IS_DARK_MODE] ?: true,
             language = prefs[Keys.LANGUAGE] ?: "en",
-            currency = prefs[Keys.CURRENCY] ?: "LKR",
             biometricsEnabled = prefs[Keys.BIOMETRICS_ENABLED] ?: false,
             localProfilePhotoPath = prefs[Keys.LOCAL_PROFILE_PHOTO_PATH] ?: "",
         )
@@ -30,10 +29,6 @@ class SettingsRepository @Inject constructor(
 
     suspend fun setLanguage(language: String) {
         dataStore.edit { it[Keys.LANGUAGE] = language }
-    }
-
-    suspend fun setCurrency(currency: String) {
-        dataStore.edit { it[Keys.CURRENCY] = currency }
     }
 
     suspend fun setBiometricsEnabled(enabled: Boolean) {
@@ -54,7 +49,6 @@ class SettingsRepository @Inject constructor(
     private object Keys {
         val IS_DARK_MODE = booleanPreferencesKey("is_dark_mode")
         val LANGUAGE = stringPreferencesKey("language")
-        val CURRENCY = stringPreferencesKey("currency")
         val BIOMETRICS_ENABLED = booleanPreferencesKey("biometrics_enabled")
         val LOCAL_PROFILE_PHOTO_PATH = stringPreferencesKey("local_profile_photo_path")
     }
@@ -63,7 +57,6 @@ class SettingsRepository @Inject constructor(
 data class SettingsState(
     val isDarkMode: Boolean,
     val language: String,
-    val currency: String,
     val biometricsEnabled: Boolean,
     val localProfilePhotoPath: String,
 )

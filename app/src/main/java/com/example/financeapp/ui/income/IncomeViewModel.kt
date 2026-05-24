@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.domain.model.Income
 import com.example.financeapp.domain.model.RecurringIncome
+import com.example.financeapp.domain.repository.ExchangeRateRepository
 import com.example.financeapp.domain.repository.IncomeRepository
 import com.example.financeapp.util.AppEventBus
 import com.example.financeapp.util.DataChangeEvent
@@ -29,7 +30,10 @@ import kotlinx.coroutines.launch
 
 sealed interface IncomeUiState {
     data object Loading : IncomeUiState
-    data class Success(val entries: List<Income>) : IncomeUiState
+    data class Success(
+        val entries: List<Income>,
+        val errorMessage: String? = null
+    ) : IncomeUiState
 }
 
 enum class IncomePeriod { WEEK, MONTH, YEAR }
@@ -60,6 +64,7 @@ data class AddIncomeRequest(
 @HiltViewModel
 class IncomeViewModel @Inject constructor(
     private val repository: IncomeRepository,
+    private val exchangeRateRepository: ExchangeRateRepository,
     @ApplicationContext private val appContext: Context,
     private val eventBus: AppEventBus,
 ) : ViewModel() {
@@ -111,52 +116,75 @@ class IncomeViewModel @Inject constructor(
 
     fun addIncome(req: AddIncomeRequest) {
         viewModelScope.launch {
-            val rate = req.customExchangeRate?.takeIf { it > 0 }
-                ?: defaultExchangeRateFor(req.currency)
-            val amountLkr = req.amount * rate
-            val income = Income(
-                id = "inc_${UUID.randomUUID()}",
-                amount = req.amount,
-                currency = req.currency,
-                amountLKR = amountLkr,
-                sourceType = req.sourceType,
-                sourceLabel = req.sourceLabel,
-                date = req.date,
-                notes = req.notes,
-                projectRef = req.projectRef,
-                exchangeRate = rate,
-                isRecurring = req.isRecurring,
-                invoicePaid = req.invoicePaid,
-            )
-            repository.insertIncome(income)
-            cachedEntries = repository.getAllIncomes()
-            updateForPeriod(cachedEntries)
-            eventBus.send(DataChangeEvent.INCOME)
+            try {
+                val rate = if (req.currency.uppercase() == "LKR") 1.0
+                else exchangeRateRepository.getRate(req.currency, "lkr")
+
+                val amountLkr = req.amount * rate
+                val income = Income(
+                    id = "inc_${UUID.randomUUID()}",
+                    amount = req.amount,
+                    currency = req.currency,
+                    amountLKR = amountLkr,
+                    sourceType = req.sourceType,
+                    sourceLabel = req.sourceLabel,
+                    date = req.date,
+                    notes = req.notes,
+                    projectRef = req.projectRef,
+                    exchangeRate = rate,
+                    isRecurring = req.isRecurring,
+                    invoicePaid = req.invoicePaid,
+                )
+                repository.insertIncome(income)
+                cachedEntries = repository.getAllIncomes()
+                updateForPeriod(cachedEntries)
+                eventBus.send(DataChangeEvent.INCOME)
+            } catch (e: Exception) {
+                val current = _state.value
+                if (current is IncomeUiState.Success) {
+                    _state.value = current.copy(errorMessage = e.message ?: "Failed to fetch exchange rate")
+                }
+            }
         }
     }
 
     fun updateIncome(id: String, req: AddIncomeRequest) {
         viewModelScope.launch {
-            val rate = req.customExchangeRate?.takeIf { it > 0 }
-                ?: defaultExchangeRateFor(req.currency)
-            val income = Income(
-                id = id,
-                amount = req.amount,
-                currency = req.currency,
-                amountLKR = req.amount * rate,
-                sourceType = req.sourceType,
-                sourceLabel = req.sourceLabel,
-                date = req.date,
-                notes = req.notes,
-                projectRef = req.projectRef,
-                exchangeRate = rate,
-                isRecurring = req.isRecurring,
-                invoicePaid = req.invoicePaid,
-            )
-            repository.updateIncome(income)
-            cachedEntries = repository.getAllIncomes()
-            updateForPeriod(cachedEntries)
-            eventBus.send(DataChangeEvent.INCOME)
+            try {
+                val rate = if (req.currency.uppercase() == "LKR") 1.0
+                else exchangeRateRepository.getRate(req.currency, "lkr")
+
+                val income = Income(
+                    id = id,
+                    amount = req.amount,
+                    currency = req.currency,
+                    amountLKR = req.amount * rate,
+                    sourceType = req.sourceType,
+                    sourceLabel = req.sourceLabel,
+                    date = req.date,
+                    notes = req.notes,
+                    projectRef = req.projectRef,
+                    exchangeRate = rate,
+                    isRecurring = req.isRecurring,
+                    invoicePaid = req.invoicePaid,
+                )
+                repository.updateIncome(income)
+                cachedEntries = repository.getAllIncomes()
+                updateForPeriod(cachedEntries)
+                eventBus.send(DataChangeEvent.INCOME)
+            } catch (e: Exception) {
+                val current = _state.value
+                if (current is IncomeUiState.Success) {
+                    _state.value = current.copy(errorMessage = e.message ?: "Failed to fetch exchange rate")
+                }
+            }
+        }
+    }
+
+    fun clearError() {
+        val current = _state.value
+        if (current is IncomeUiState.Success) {
+            _state.value = current.copy(errorMessage = null)
         }
     }
 
@@ -242,7 +270,7 @@ class IncomeViewModel @Inject constructor(
         val displayed = if (activeFilter.isEmpty()) periodEntries
         else periodEntries.filter { it.sourceType.uppercase() in activeFilter }
 
-        _state.value = IncomeUiState.Success(displayed)
+        _state.value = IncomeUiState.Success(displayed, (state.value as? IncomeUiState.Success)?.errorMessage)
         _totalLkr.value = periodEntries.sumOf { it.amountLKR }
         _sourceBreakdown.value = computeBreakdown(periodEntries)
 
@@ -325,11 +353,4 @@ class IncomeViewModel @Inject constructor(
         return breakdown
     }
 
-    internal fun defaultExchangeRateFor(currency: String): Double = when (currency.uppercase()) {
-        "USD" -> 300.0
-        "USDT" -> 300.0
-        "ETH" -> 900_000.0
-        "LKR" -> 1.0
-        else -> 1.0
-    }
 }
