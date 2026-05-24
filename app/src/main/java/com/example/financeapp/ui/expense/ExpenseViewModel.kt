@@ -7,6 +7,7 @@ import com.example.financeapp.domain.repository.ExpenseRepository
 import com.example.financeapp.util.AppEventBus
 import com.example.financeapp.util.DataChangeEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,6 +34,57 @@ class ExpenseViewModel @Inject constructor(
             refreshExpenses()
             eventBus.send(DataChangeEvent.EXPENSE)
         }
+    }
+
+    fun saveExpense(
+        amountLkr: Double,
+        category: String,
+        spendingType: String,
+        paymentMethod: String,
+        timestamp: Long = System.currentTimeMillis()
+    ) {
+        val currentEdit = _state.value.expenseToEdit
+        val expense = if (currentEdit != null) {
+            currentEdit.copy(
+                amountLkr = amountLkr,
+                category = category,
+                spendingType = spendingType,
+                paymentMethod = paymentMethod,
+                timestamp = timestamp
+            )
+        } else {
+            Expense(
+                id = "exp_${UUID.randomUUID()}",
+                amountLkr = amountLkr,
+                category = category,
+                spendingType = spendingType,
+                paymentMethod = paymentMethod,
+                timestamp = timestamp
+            )
+        }
+
+        viewModelScope.launch {
+            if (currentEdit != null) {
+                repository.updateExpense(expense)
+            } else {
+                repository.insertExpense(expense)
+            }
+            _state.value = _state.value.copy(expenseToEdit = null)
+            refreshExpenses()
+            eventBus.send(DataChangeEvent.EXPENSE)
+        }
+    }
+
+    fun deleteExpense(expense: Expense) {
+        viewModelScope.launch {
+            repository.deleteExpense(expense)
+            refreshExpenses()
+            eventBus.send(DataChangeEvent.EXPENSE)
+        }
+    }
+
+    fun setExpenseToEdit(expense: Expense?) {
+        _state.value = _state.value.copy(expenseToEdit = expense)
     }
 
     fun setFilterCategory(category: String) {
@@ -75,5 +127,6 @@ data class ExpenseUiState(
     val filteredExpenses: List<Expense> = emptyList(),
     val committedTotal: Double = 0.0,
     val discretionaryTotal: Double = 0.0,
-    val selectedFilterCategory: String = "All"
+    val selectedFilterCategory: String = "All",
+    val expenseToEdit: Expense? = null
 )
