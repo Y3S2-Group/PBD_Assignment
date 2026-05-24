@@ -28,5 +28,19 @@ class ExpenseRepositoryImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             expenseDao.sumAmountLkrBetween(startInclusive, endInclusive) ?: 0.0
         }
+
+    override suspend fun sumAmountLkrByCategoryBetween(start: Long, end: Long): Map<String, Double> =
+        withContext(Dispatchers.IO) {
+            expenseDao.sumAmountLkrByCategoryBetween(start, end)
+                .associate { it.category to (it.total ?: 0.0) }
+        }
+
+    override suspend fun sumAmountLkrBySpendingTypeBetween(
+        spendingType: String,
+        start: Long,
+        end: Long
+    ): Double = withContext(Dispatchers.IO) {
+        expenseDao.sumAmountLkrBySpendingTypeBetween(spendingType, start, end) ?: 0.0
+    }
 }
 
