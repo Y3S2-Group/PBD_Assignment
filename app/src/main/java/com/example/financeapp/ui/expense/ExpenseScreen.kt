@@ -72,6 +72,17 @@ import java.text.NumberFormat
 import java.util.Locale
 import java.util.UUID
 
+private val EXPENSE_CATEGORIES = listOf(
+    CategoryOption("Coffee", Icons.Outlined.LocalCafe),
+    CategoryOption("Food", Icons.Outlined.Restaurant),
+    CategoryOption("Transport", Icons.Outlined.DirectionsCar),
+    CategoryOption("Shop", Icons.Outlined.ShoppingBag),
+    CategoryOption("Subs", Icons.Outlined.Subscriptions),
+    CategoryOption("Utility", Icons.Outlined.Bolt),
+    CategoryOption("Commute", Icons.Outlined.Commute),
+    CategoryOption("Other", Icons.Outlined.MoreHoriz)
+)
+
 @Composable
 fun ExpenseScreen(
     avatarId: String,
@@ -236,12 +247,12 @@ private fun CategoryFilterRow(
                 onClick = { onCategorySelected("All") }
             )
         }
-        listOf("Food", "Transport", "Tech", "Subs", "Travel").forEach { label ->
+        EXPENSE_CATEGORIES.forEach { option ->
             item {
                 FilterPill(
-                    label = label,
-                    selected = selectedCategory.equals(label, ignoreCase = true),
-                    onClick = { onCategorySelected(label) }
+                    label = option.label,
+                    selected = selectedCategory.equals(option.label, ignoreCase = true),
+                    onClick = { onCategorySelected(option.label) }
                 )
             }
         }
@@ -476,7 +487,7 @@ private fun QuickAddOverlay(
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            CategoryGrid(
+            CategoryScrollRow(
                 selectedCategory = selectedCategory,
                 onCategorySelected = {
                     selectedCategory = it
@@ -486,57 +497,57 @@ private fun QuickAddOverlay(
                 }
             )
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "Spending Type",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf("COMMITTED", "DISCRETIONARY").forEach { type ->
-                            FilterChip(
-                                selected = spendingType == type,
-                                onClick = { spendingType = type },
-                                label = {
-                                    Text(
-                                        text = if (type == "COMMITTED") "Comm." else "Disc.",
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                )
+            Text(
+                text = "Spending Type",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                listOf("COMMITTED", "DISCRETIONARY").forEach { type ->
+                    FilterChip(
+                        selected = spendingType == type,
+                        onClick = { spendingType = type },
+                        label = {
+                            Text(
+                                text = if (type == "COMMITTED") "Committed" else "Discretionary",
+                                style = MaterialTheme.typography.labelSmall
                             )
-                        }
-                    }
+                        },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
                 }
+            }
 
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "Payment",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+            Text(
+                text = "Payment",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                listOf("Card", "Cash", "Wallet").forEach { method ->
+                    FilterChip(
+                        selected = paymentMethod.startsWith(method),
+                        onClick = {
+                            paymentMethod = if (method == "Wallet") "Digital Wallet" else method
+                        },
+                        label = { Text(method, style = MaterialTheme.typography.labelSmall) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
                     )
-                    Row(
-                        modifier = Modifier.horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf("Card", "Cash", "Wallet").forEach { method ->
-                            FilterChip(
-                                selected = paymentMethod.startsWith(method),
-                                onClick = {
-                                    paymentMethod = if (method == "Wallet") "Digital Wallet" else method
-                                },
-                                label = { Text(method, style = MaterialTheme.typography.labelSmall) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                )
-                            )
-                        }
-                    }
                 }
             }
 
@@ -592,32 +603,22 @@ private fun AmountDisplay(value: String) {
 }
 
 @Composable
-private fun CategoryGrid(
+private fun CategoryScrollRow(
     selectedCategory: String,
     onCategorySelected: (String) -> Unit
 ) {
-    val categories = listOf(
-        CategoryOption("Coffee", Icons.Outlined.LocalCafe),
-        CategoryOption("Food", Icons.Outlined.Restaurant),
-        CategoryOption("Transport", Icons.Outlined.DirectionsCar),
-        CategoryOption("Shop", Icons.Outlined.ShoppingBag),
-        CategoryOption("Subs", Icons.Outlined.Subscriptions),
-        CategoryOption("Utility", Icons.Outlined.Bolt),
-        CategoryOption("Commute", Icons.Outlined.Commute),
-        CategoryOption("Other", Icons.Outlined.MoreHoriz)
-    )
-
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        categories.chunked(4).forEach { rowItems ->
-            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                rowItems.forEach { option ->
-                    CategoryIcon(
-                        option = option,
-                        selected = selectedCategory == option.label,
-                        onClick = { onCategorySelected(option.label) }
-                    )
-                }
-            }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        EXPENSE_CATEGORIES.forEach { option ->
+            CategoryIcon(
+                option = option,
+                selected = selectedCategory == option.label,
+                onClick = { onCategorySelected(option.label) }
+            )
         }
     }
 }
