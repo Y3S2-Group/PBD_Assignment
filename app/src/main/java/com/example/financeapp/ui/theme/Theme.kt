@@ -2,6 +2,7 @@ package com.example.financeapp.ui.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val DarkColorScheme = darkColorScheme(
@@ -35,10 +36,16 @@ private val DarkColorScheme = darkColorScheme(
     inversePrimary = InversePrimary,
 )
 
+private val LightColorScheme = lightColorScheme()
+
 @Composable
-fun AppTheme(content: @Composable () -> Unit) {
+fun AppTheme(
+    darkTheme: Boolean,
+    content: @Composable () -> Unit,
+) {
+    val colors = if (darkTheme) DarkColorScheme else LightColorScheme
     MaterialTheme(
-        colorScheme = DarkColorScheme,
+        colorScheme = colors,
         typography = AppTypography,
         content = content,
     )
