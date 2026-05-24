@@ -1,5 +1,7 @@
 package com.example.financeapp.ui.notifications
 
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.domain.model.Goal
@@ -7,6 +9,7 @@ import com.example.financeapp.domain.repository.BudgetRepository
 import com.example.financeapp.domain.repository.ExpenseRepository
 import com.example.financeapp.domain.repository.IncomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -23,7 +26,12 @@ class NotificationViewModel @Inject constructor(
     private val expenseRepo: ExpenseRepository,
     private val incomeRepo: IncomeRepository,
     private val budgetRepo: BudgetRepository,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
+
+    /** Persists notification IDs the user has explicitly dismissed/read. */
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     private val _state = MutableStateFlow(NotificationUiState())
     val state: StateFlow<NotificationUiState> = _state.asStateFlow()
@@ -197,11 +205,17 @@ class NotificationViewModel @Inject constructor(
                 .distinctBy { it.id }
                 .sortedWith(compareBy({ it.section.ordinal }, { -it.sortKey }))
 
+            // Apply persisted read state — any ID the user previously dismissed stays read
+            val readIds = loadReadIds()
+            val withPersistedRead = sorted.map { item ->
+                if (item.id in readIds) item.copy(isRead = true) else item
+            }
+
             // ── AI insight ────────────────────────────────────────────────
             val (insightTitle, insightText) = buildInsight(goal, incomeThisMonth, expenseThisMonth)
 
             _state.value = NotificationUiState(
-                notifications = sorted,
+                notifications = withPersistedRead,
                 isLoading = false,
                 insightTitle = insightTitle,
                 insightText = insightText,
@@ -211,11 +225,14 @@ class NotificationViewModel @Inject constructor(
 
     fun markAllAsRead() {
         _state.update { current ->
+            val allIds = current.notifications.map { it.id }.toSet()
+            persistReadIds(loadReadIds() + allIds)
             current.copy(notifications = current.notifications.map { it.copy(isRead = true) })
         }
     }
 
     fun markAsRead(id: String) {
+        persistReadIds(loadReadIds() + id)
         _state.update { current ->
             current.copy(
                 notifications = current.notifications.map {
@@ -223,6 +240,15 @@ class NotificationViewModel @Inject constructor(
                 }
             )
         }
+    }
+
+    // ── SharedPreferences helpers ─────────────────────────────────────────────
+
+    private fun loadReadIds(): Set<String> =
+        prefs.getStringSet(PREF_READ_IDS, emptySet()) ?: emptySet()
+
+    private fun persistReadIds(ids: Set<String>) {
+        prefs.edit().putStringSet(PREF_READ_IDS, ids).apply()
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -289,6 +315,8 @@ class NotificationViewModel @Inject constructor(
 
     companion object {
         private const val DAY_MILLIS = 24L * 60 * 60 * 1_000
+        private const val PREFS_NAME = "notification_read_state"
+        private const val PREF_READ_IDS = "read_ids"
     }
 }
 
