@@ -9,6 +9,7 @@ import com.example.financeapp.domain.model.Income
 
 @Dao
 interface IncomeDao {
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(income: Income)
 
@@ -21,11 +22,14 @@ interface IncomeDao {
     @Query("SELECT * FROM incomes WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): Income?
 
-    @Query("SELECT * FROM incomes")
+    @Query("SELECT * FROM incomes ORDER BY date DESC")
     suspend fun getAll(): List<Income>
 
-    @Query("SELECT * FROM incomes WHERE sourceType = :sourceType")
+    @Query("SELECT * FROM incomes WHERE sourceType = :sourceType ORDER BY date DESC")
     suspend fun getBySourceType(sourceType: String): List<Income>
+
+    @Query("SELECT * FROM incomes WHERE sourceType IN (:sourceTypes) ORDER BY date DESC")
+    suspend fun getBySourceTypes(sourceTypes: List<String>): List<Income>
 
     @Query("SELECT SUM(amountLKR) FROM incomes WHERE date BETWEEN :startInclusive AND :endInclusive")
     suspend fun sumAmountLkrBetween(startInclusive: Long, endInclusive: Long): Double?
