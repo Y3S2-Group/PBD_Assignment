@@ -1,9 +1,5 @@
 package com.example.financeapp.ui.profile
 
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +16,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,7 +43,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -55,21 +57,22 @@ import androidx.compose.ui.Alignment
 import androidx.fragment.app.FragmentActivity
 import com.example.financeapp.util.BiometricHelper
 import com.example.financeapp.util.BiometricStatus
+import com.example.financeapp.util.AvatarManager
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
-import java.io.File
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     onLogout: () -> Unit,
@@ -79,17 +82,10 @@ fun ProfileScreen(
     val context = LocalContext.current
     val activity = context as FragmentActivity
     var showLanguagePicker by remember { mutableStateOf(false) }
+    var showAvatarPicker by remember { mutableStateOf(false) }
     // Biometric capability dialog
     var biometricDialogMessage by remember { mutableStateOf<String?>(null) }
     val languageLabel = languageLabelFor(state.language)
-    val photoPicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia(),
-        onResult = { uri: Uri? ->
-            if (uri != null) {
-                viewModel.onProfilePhotoSelected(context, uri)
-            }
-        },
-    )
 
     Column(
         modifier = Modifier
@@ -102,11 +98,9 @@ fun ProfileScreen(
         ProfileHeader(
             displayName = state.displayName,
             memberSinceLabel = formatMemberSince(state.memberSince),
-            localPhotoPath = state.localProfilePhotoPath,
+            avatarId = state.selectedAvatarId,
             onEditPhoto = {
-                photoPicker.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                )
+                showAvatarPicker = true
             }
         )
 
@@ -227,6 +221,17 @@ fun ProfileScreen(
         )
     }
 
+    if (showAvatarPicker) {
+        AvatarPickerDialog(
+            onDismiss = { showAvatarPicker = false },
+            onAvatarSelected = { id ->
+                viewModel.updateAvatar(id)
+                showAvatarPicker = false
+            },
+            selectedAvatarId = state.selectedAvatarId
+        )
+    }
+
     // Biometric unavailable info dialog
     biometricDialogMessage?.let { message ->
         AlertDialog(
@@ -246,7 +251,7 @@ fun ProfileScreen(
 private fun ProfileHeader(
     displayName: String,
     memberSinceLabel: String,
-    localPhotoPath: String,
+    avatarId: String,
     onEditPhoto: () -> Unit,
 ) {
     GlassCard {
@@ -274,7 +279,7 @@ private fun ProfileHeader(
             ) {
                 Box {
                     val editBadgeColor = Color(0xFF2ECC71)
-                    ProfileAvatar(localPhotoPath = localPhotoPath)
+                    ProfileAvatar(avatarId)
                     Icon(
                         imageVector = Icons.Outlined.Edit,
                         contentDescription = "Edit photo",
@@ -309,7 +314,7 @@ private fun ProfileHeader(
 }
 
 @Composable
-private fun ProfileAvatar(localPhotoPath: String) {
+private fun ProfileAvatar(avatarId: String) {
     Box(
         modifier = Modifier
             .size(96.dp)
@@ -318,22 +323,13 @@ private fun ProfileAvatar(localPhotoPath: String) {
             .background(MaterialTheme.colorScheme.surfaceContainerHigh),
         contentAlignment = Alignment.Center
     ) {
-        if (localPhotoPath.isNotBlank()) {
-            AsyncImage(
-                model = File(localPhotoPath),
-                contentDescription = "Profile photo",
-                modifier = Modifier
-                    .size(90.dp)
-                    .clip(CircleShape)
-            )
-        } else {
-            Icon(
-                imageVector = Icons.Outlined.Person,
-                contentDescription = "Profile placeholder",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(40.dp)
-            )
-        }
+        androidx.compose.foundation.Image(
+            painter = painterResource(id = AvatarManager.getAvatarResource(avatarId)),
+            contentDescription = "Profile photo",
+            modifier = Modifier
+                .size(80.dp)
+                .clip(CircleShape)
+        )
     }
 }
 
@@ -550,6 +546,69 @@ private fun OptionPickerDialog(
         confirmButton = {},
         dismissButton = {},
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AvatarPickerDialog(
+    onDismiss: () -> Unit,
+    onAvatarSelected: (String) -> Unit,
+    selectedAvatarId: String
+) {
+    val sheetState = rememberModalBottomSheetState()
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Select Avatar",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(AvatarManager.predefinedAvatars.keys.toList()) { id ->
+                    val isSelected = id == selectedAvatarId
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                            .border(
+                                width = if (isSelected) 3.dp else 1.dp,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary
+                                else Color.Transparent,
+                                shape = CircleShape
+                            )
+                            .clickable { onAvatarSelected(id) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        androidx.compose.foundation.Image(
+                            painter = painterResource(id = AvatarManager.getAvatarResource(id)),
+                            contentDescription = null,
+                            modifier = Modifier.size(56.dp)
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
 }
 
 private fun languageLabelFor(code: String): String {

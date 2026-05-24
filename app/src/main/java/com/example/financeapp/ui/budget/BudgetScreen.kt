@@ -98,6 +98,7 @@ private val BUDGET_CATEGORIES = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BudgetScreen(
+    avatarId: String,
     onProfileClick: () -> Unit = {},
     onNotificationClick: () -> Unit = {},
     viewModel: BudgetViewModel = hiltViewModel(),
@@ -145,7 +146,7 @@ fun BudgetScreen(
             title = "Budget",
             subtitle = null,
             healthScore = dashState.healthScore,
-            localProfilePhotoPath = null,
+            avatarId = avatarId,
             onProfileClick = onProfileClick,
             onNotificationClick = onNotificationClick,
         )

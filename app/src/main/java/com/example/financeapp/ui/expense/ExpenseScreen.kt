@@ -66,6 +66,7 @@ import java.util.UUID
 
 @Composable
 fun ExpenseScreen(
+    avatarId: String,
     onProfileClick: () -> Unit = {},
     onNotificationClick: () -> Unit = {},
     viewModel: ExpenseViewModel = hiltViewModel(),
@@ -85,7 +86,7 @@ fun ExpenseScreen(
                     title = "Expenses",
                     subtitle = null,
                     healthScore = dashState.healthScore,
-                    localProfilePhotoPath = null,
+                    avatarId = avatarId,
                     onProfileClick = onProfileClick,
                     onNotificationClick = onNotificationClick,
                 )

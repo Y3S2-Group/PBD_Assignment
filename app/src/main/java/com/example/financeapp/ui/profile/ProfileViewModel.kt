@@ -12,12 +12,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
-
-import android.content.Context
-import android.net.Uri
-
-import com.example.financeapp.data.local.LocalImageStorage
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -43,7 +39,14 @@ class ProfileViewModel @Inject constructor(
                     isLoading.value = true
                     errorMessage.value = null
                     runCatching { userRepository.getUserDetails(user.uid) }
-                        .onSuccess { profile -> userProfile.value = profile }
+                        .onSuccess { profile ->
+                            userProfile.value = profile
+                            profile?.let {
+                                viewModelScope.launch {
+                                    settingsRepository.setSelectedAvatarId(it.avatarId)
+                                }
+                            }
+                        }
                         .onFailure { error ->
                             errorMessage.value = error.message ?: "Unable to load profile"
                         }
@@ -64,10 +67,10 @@ class ProfileViewModel @Inject constructor(
                     displayName = profile?.displayName.orEmpty(),
                     email = profile?.email.orEmpty(),
                     memberSince = profile?.memberSince ?: 0L,
-                    localProfilePhotoPath = settings.localProfilePhotoPath,
                     isDarkMode = settings.isDarkMode,
                     language = settings.language,
                     biometricsEnabled = settings.biometricsEnabled,
+                    selectedAvatarId = settings.selectedAvatarId,
                     isLoading = loading,
                     errorMessage = error,
                 )
@@ -93,12 +96,21 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun onProfilePhotoSelected(context: Context, uri: Uri) {
+    fun updateAvatar(newAvatarId: String) {
         viewModelScope.launch {
+            // Local update for instant UI feedback
+            settingsRepository.setSelectedAvatarId(newAvatarId)
+
+            // Cloud update
             val uid = state.value.uid
-            runCatching { LocalImageStorage.copyToInternalStorage(context, uri, uid) }
-                .onSuccess { path -> settingsRepository.setLocalProfilePhotoPath(path) }
-                .onFailure { error -> errorMessage.value = error.message ?: "Unable to save photo" }
+            if (uid.isNotBlank()) {
+                viewModelScope.launch(Dispatchers.IO) {
+                    runCatching { userRepository.updateAvatar(uid, newAvatarId) }
+                        .onFailure { error ->
+                            // Optional: handle failure (e.g., revert local or show error)
+                        }
+                }
+            }
         }
     }
 
@@ -115,10 +127,10 @@ data class ProfileUiState(
     val displayName: String = "",
     val email: String = "",
     val memberSince: Long = 0L,
-    val localProfilePhotoPath: String = "",
     val isDarkMode: Boolean = true,
     val language: String = "en",
     val biometricsEnabled: Boolean = false,
+    val selectedAvatarId: String = "avatar_1",
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
 )
