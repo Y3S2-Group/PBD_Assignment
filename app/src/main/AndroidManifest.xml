@@ -31,12 +31,27 @@
             android:name=".util.RecurringIncomeReminderService"
             android:exported="false" />
 
+        <!-- Smart financial alerts service (Hilt-injected; started by ViewModels + daily alarm) -->
+        <service
+            android:name=".util.FinancialAlertsService"
+            android:exported="false" />
+
         <!-- BroadcastReceiver for AlarmManager alarms and BOOT_COMPLETED -->
         <receiver
             android:name=".util.RecurringIncomeReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.example.financeapp.ACTION_RECURRING_INCOME_DUE" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- BroadcastReceiver for the daily 8 PM digest alarm + BOOT_COMPLETED reschedule -->
+        <receiver
+            android:name=".util.FinancialAlertsReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.financeapp.ACTION_DAILY_DIGEST_ALARM" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
