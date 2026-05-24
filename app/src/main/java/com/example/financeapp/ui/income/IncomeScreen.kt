@@ -32,7 +32,6 @@ import androidx.compose.material.icons.outlined.CurrencyBitcoin
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Work
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -71,6 +70,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.financeapp.domain.model.Income
+import com.example.financeapp.ui.components.GlobalTopAppBar
 import java.text.NumberFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -79,7 +79,11 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 @Composable
-fun IncomeScreen(viewModel: IncomeViewModel = hiltViewModel()) {
+fun IncomeScreen(
+    onProfileClick: () -> Unit = {},
+    onNotificationClick: () -> Unit = {},
+    viewModel: IncomeViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsState()
     val totalLkr by viewModel.totalLkr.collectAsState()
     val sourceBreakdown by viewModel.sourceBreakdown.collectAsState()
@@ -106,6 +110,16 @@ fun IncomeScreen(viewModel: IncomeViewModel = hiltViewModel()) {
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             item {
+                GlobalTopAppBar(
+                    title = "Income",
+                    subtitle = null,
+                    healthScore = 85,
+                    localProfilePhotoPath = null,
+                    onProfileClick = onProfileClick,
+                    onNotificationClick = onNotificationClick,
+                )
+            }
+            item {
                 IncomeHeader(
                     totalLkr = totalLkr,
                     selectedPeriod = selectedPeriod,
@@ -127,36 +141,6 @@ fun IncomeScreen(viewModel: IncomeViewModel = hiltViewModel()) {
             }
         }
 
-        FloatingActionButton(
-            onClick = {
-                editingIncome = null
-                showBottomSheet = true
-            },
-            shape = RoundedCornerShape(20.dp),
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 96.dp)
-                .size(64.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        brush = Brush.linearGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.secondary
-                            )
-                        ),
-                        shape = RoundedCornerShape(20.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "+", style = MaterialTheme.typography.headlineMedium)
-            }
-        }
 
         if (showBottomSheet) {
             AddIncomeBottomSheet(
@@ -221,40 +205,6 @@ private fun IncomeHeader(
     onPeriodChange: (IncomePeriod) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            shape = CircleShape
-                        )
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                            shape = CircleShape
-                        )
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = "Vault",
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Icon(
-                imageVector = Icons.Outlined.Notifications,
-                contentDescription = "Notifications",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(28.dp)
-            )
-        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
