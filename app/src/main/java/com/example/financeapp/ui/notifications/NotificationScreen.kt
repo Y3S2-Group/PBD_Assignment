@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -19,12 +22,16 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.Error
+import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Security
+import androidx.compose.material.icons.rounded.TrendingDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -54,6 +61,8 @@ fun NotificationScreen(
     val state by viewModel.state.collectAsState()
     val today = state.notifications.filter { it.section == NotificationSection.Today }
     val yesterday = state.notifications.filter { it.section == NotificationSection.Yesterday }
+    val earlier = state.notifications.filter { it.section == NotificationSection.Earlier }
+    val isEmpty = !state.isLoading && state.notifications.isEmpty()
 
     Scaffold(
         topBar = {
@@ -75,6 +84,19 @@ fun NotificationScreen(
             )
         }
     ) { innerPadding ->
+
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
+            return@Scaffold
+        }
+
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -83,31 +105,54 @@ fun NotificationScreen(
                 .padding(bottom = 28.dp, top = 16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            HeaderActions(onMarkAll = viewModel::markAllAsRead)
+            HeaderActions(
+                unreadCount = state.notifications.count { !it.isRead },
+                onMarkAll = viewModel::markAllAsRead,
+            )
 
-            if (today.isNotEmpty()) {
-                NotificationSection(
-                    title = "Today",
-                    accentColor = MaterialTheme.colorScheme.secondary,
-                    items = today
-                )
+            if (isEmpty) {
+                EmptyNotificationsCard()
+            } else {
+                if (today.isNotEmpty()) {
+                    NotificationSection(
+                        title = "Today",
+                        accentColor = MaterialTheme.colorScheme.secondary,
+                        items = today,
+                        onItemClick = viewModel::markAsRead,
+                    )
+                }
+
+                if (yesterday.isNotEmpty()) {
+                    NotificationSection(
+                        title = "Yesterday",
+                        accentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        items = yesterday,
+                        onItemClick = viewModel::markAsRead,
+                    )
+                }
+
+                if (earlier.isNotEmpty()) {
+                    NotificationSection(
+                        title = "Earlier",
+                        accentColor = MaterialTheme.colorScheme.outline,
+                        items = earlier,
+                        onItemClick = viewModel::markAsRead,
+                    )
+                }
             }
 
-            if (yesterday.isNotEmpty()) {
-                NotificationSection(
-                    title = "Yesterday",
-                    accentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    items = yesterday
-                )
-            }
-
-            AiInsightCard()
+            AiInsightCard(
+                title = state.insightTitle,
+                body = state.insightText,
+            )
         }
     }
 }
 
+// ── Header ────────────────────────────────────────────────────────────────────
+
 @Composable
-private fun HeaderActions(onMarkAll: () -> Unit) {
+private fun HeaderActions(unreadCount: Int, onMarkAll: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -120,26 +165,62 @@ private fun HeaderActions(onMarkAll: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = "Stay updated with your wealth",
+                text = if (unreadCount > 0) "$unreadCount unread" else "You're all caught up",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        TextButton(onClick = onMarkAll) {
-            Text(
-                text = "Mark all as read",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
+        if (unreadCount > 0) {
+            TextButton(onClick = onMarkAll) {
+                Text(
+                    text = "Mark all as read",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+
+@Composable
+private fun EmptyNotificationsCard() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Notifications,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            modifier = Modifier.size(56.dp),
+        )
+        Text(
+            text = "No notifications yet",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = "Add income, expenses, or budget categories to start receiving smart alerts.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+// ── Section ───────────────────────────────────────────────────────────────────
 
 @Composable
 private fun NotificationSection(
     title: String,
     accentColor: Color,
     items: List<NotificationItem>,
+    onItemClick: (String) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
@@ -148,24 +229,33 @@ private fun NotificationSection(
             color = accentColor
         )
         items.forEach { item ->
-            NotificationCard(item = item)
+            NotificationCard(item = item, onClick = { onItemClick(item.id) })
         }
     }
 }
 
+// ── Card ──────────────────────────────────────────────────────────────────────
+
 @Composable
-private fun NotificationCard(item: NotificationItem) {
+private fun NotificationCard(item: NotificationItem, onClick: () -> Unit) {
     val iconData = notificationIconData(item.type, item.icon)
-    val cardAlpha = if (item.isRead) 0.75f else 1f
+    val cardAlpha = if (item.isRead) 0.6f else 1f
 
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.7f)
+            containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = if (item.isRead) 0.5f else 0.7f)
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
+            .border(
+                width = if (item.isRead) 0.5.dp else 1.dp,
+                color = if (item.isRead)
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+                else
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                shape = RoundedCornerShape(16.dp),
+            )
             .clip(RoundedCornerShape(16.dp))
             .background(Color.Transparent)
     ) {
@@ -174,7 +264,7 @@ private fun NotificationCard(item: NotificationItem) {
                 .fillMaxWidth()
                 .padding(16.dp)
                 .background(Color.Transparent)
-                .clickable { },
+                .clickable { onClick() },
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -188,7 +278,7 @@ private fun NotificationCard(item: NotificationItem) {
                 Icon(
                     imageVector = iconData.icon,
                     contentDescription = null,
-                    tint = iconData.iconTint
+                    tint = iconData.iconTint.copy(alpha = cardAlpha),
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
@@ -200,26 +290,43 @@ private fun NotificationCard(item: NotificationItem) {
                     Text(
                         text = item.title,
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = cardAlpha),
                     )
                     Text(
                         text = item.timestampLabel,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = cardAlpha),
                     )
                 }
+                Spacer(Modifier.height(2.dp))
                 Text(
                     text = item.description,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = cardAlpha),
+                )
+            }
+            // Unread dot
+            if (!item.isRead) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(MaterialTheme.colorScheme.primary),
                 )
             }
         }
     }
 }
 
+// ── AI Insight card ───────────────────────────────────────────────────────────
+
 @Composable
-private fun AiInsightCard() {
+private fun AiInsightCard(title: String, body: String) {
+    val displayTitle = title.ifBlank { "Financial Insight" }
+    val displayBody = body.ifBlank {
+        "Log your income and expenses to unlock personalised financial insights and smart alerts."
+    }
+
     val borderGradient = Brush.linearGradient(
         listOf(
             MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
@@ -236,7 +343,10 @@ private fun AiInsightCard() {
             .padding(20.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Icon(
                     imageVector = Icons.Rounded.AutoAwesome,
                     contentDescription = null,
@@ -249,12 +359,12 @@ private fun AiInsightCard() {
                 )
             }
             Text(
-                text = "Spending Trend Alert",
+                text = displayTitle,
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-                text = "Based on your last 7 days, you're on track to exceed your savings goal by 4%. Keep it up!",
+                text = displayBody,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -276,6 +386,8 @@ private fun AiInsightCard() {
     }
 }
 
+// ── Icon mapping ──────────────────────────────────────────────────────────────
+
 private data class NotificationIconData(
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
     val iconTint: Color,
@@ -289,30 +401,38 @@ private fun notificationIconData(
 ): NotificationIconData {
     return when (type) {
         NotificationType.Warning -> NotificationIconData(
-            icon = Icons.Rounded.Error,
+            icon = when (icon) {
+                NotificationIcon.Goal -> Icons.Rounded.EmojiEvents
+                NotificationIcon.Trending -> Icons.Rounded.TrendingDown
+                else -> Icons.Rounded.Error
+            },
             iconTint = MaterialTheme.colorScheme.error,
             containerColor = MaterialTheme.colorScheme.errorContainer
         )
+
         NotificationType.Success -> NotificationIconData(
-            icon = Icons.Rounded.AccountBalanceWallet,
+            icon = when (icon) {
+                NotificationIcon.Goal -> Icons.Rounded.EmojiEvents
+                else -> Icons.Rounded.AccountBalanceWallet
+            },
             iconTint = MaterialTheme.colorScheme.secondary,
             containerColor = MaterialTheme.colorScheme.secondaryContainer
         )
+
         NotificationType.Info -> {
-            val infoIcon = when (icon) {
+            val resolvedIcon = when (icon) {
                 NotificationIcon.Security -> Icons.Rounded.Security
                 NotificationIcon.Receipt -> Icons.AutoMirrored.Rounded.ReceiptLong
-                NotificationIcon.Warning -> Icons.Rounded.Error
                 NotificationIcon.Wallet -> Icons.Rounded.AccountBalanceWallet
+                NotificationIcon.Goal -> Icons.Rounded.EmojiEvents
+                NotificationIcon.Trending -> Icons.Rounded.TrendingDown
+                NotificationIcon.Warning -> Icons.Rounded.Error
             }
             NotificationIconData(
-                icon = infoIcon,
+                icon = resolvedIcon,
                 iconTint = MaterialTheme.colorScheme.primary,
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
             )
         }
     }
 }
-
-
-

@@ -6,11 +6,19 @@ import com.example.financeapp.domain.model.BudgetCategory
 import com.example.financeapp.domain.model.Expense
 import com.example.financeapp.domain.model.Goal
 import com.example.financeapp.domain.model.Income
+import com.example.financeapp.domain.model.RecurringIncome
 import com.example.financeapp.domain.model.SavingsDeposit
 
 @Database(
-    entities = [Income::class, Expense::class, Goal::class, BudgetCategory::class, SavingsDeposit::class],
-    version = 5,
+    entities = [
+        Income::class,
+        Expense::class,
+        Goal::class,
+        BudgetCategory::class,
+        SavingsDeposit::class,
+        RecurringIncome::class,
+    ],
+    version = 6,
     exportSchema = false
 )
 abstract class IncomeDatabase : RoomDatabase() {
@@ -19,4 +27,5 @@ abstract class IncomeDatabase : RoomDatabase() {
     abstract fun goalDao(): GoalDao
     abstract fun budgetDao(): BudgetDao
     abstract fun savingsDepositDao(): SavingsDepositDao
+    abstract fun recurringIncomeDao(): RecurringIncomeDao
 }
