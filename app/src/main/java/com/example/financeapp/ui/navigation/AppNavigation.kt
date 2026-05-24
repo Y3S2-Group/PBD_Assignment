@@ -55,34 +55,42 @@ fun AppNavigation(biometricsEnabled: Boolean = false) {
     val context = LocalContext.current
     val activity = context as FragmentActivity
 
-    // Observe the live Firebase user so we react to sign-in / sign-out.
     val currentUser by authViewModel.currentUser.collectAsState()
 
     val startDestination = remember {
         if (authViewModel.isSignedIn()) AppRoute.MAIN_GRAPH else AppRoute.AUTH_GRAPH
     }
 
-    // ── Biometric unlock tracking ──────────────────────────────────────────
-    // Starts "locked" when the app launches with an existing Firebase session;
-    // starts "unlocked" when there is no session (user will authenticate via
-    // the normal login flow, which counts as a fresh authentication).
+    // ── Biometric session state ────────────────────────────────────────────
+    // isUnlocked  — true once the user passed biometric (or came through the normal login flow)
+    // bypassLock  — true while navigating to the login screen via "Use Password";
+    //               hides the overlay without actually signing out Firebase, so the
+    //               login-screen fingerprint button can still call isSignedIn() → true.
     var isUnlocked by remember { mutableStateOf(!authViewModel.isSignedIn()) }
+    var bypassLock  by remember { mutableStateOf(false) }
 
-    // Reset whenever the signed-in user changes (e.g. after sign-out / sign-in cycle).
+    // Reset both flags when the Firebase user changes (e.g. explicit sign-out)
     LaunchedEffect(currentUser?.uid) {
-        if (currentUser == null) isUnlocked = false
+        if (currentUser == null) {
+            isUnlocked  = false
+            bypassLock  = false
+        }
     }
 
-    val biometricAvailable =
-        remember(biometricsEnabled) {
-            biometricsEnabled && BiometricHelper.checkStatus(context) == BiometricStatus.Available
-        }
+    val biometricAvailable = remember(biometricsEnabled) {
+        biometricsEnabled && BiometricHelper.checkStatus(context) == BiometricStatus.Available
+    }
 
-    // Show the lock screen only when: signed in + biometrics on + not yet unlocked this session.
-    val showLock = biometricAvailable && currentUser != null && !isUnlocked
+    // Show the lock overlay only when:
+    //  • user is signed in to Firebase
+    //  • biometrics is enabled and the hardware is available
+    //  • this session hasn't been unlocked yet
+    //  • user hasn't chosen "Use Password" (bypass flag)
+    val showLock = biometricAvailable && currentUser != null && !isUnlocked && !bypassLock
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // ── Main navigation graph ──────────────────────────────────────────
+
+        // ── Navigation graph ───────────────────────────────────────────────
         NavHost(
             navController = navController,
             startDestination = startDestination,
@@ -103,8 +111,9 @@ fun AppNavigation(biometricsEnabled: Boolean = false) {
                     LoginScreen(
                         biometricsEnabled = biometricsEnabled,
                         onLoginSuccess = {
-                            // User just authenticated — no need to biometric-gate this session.
+                            // Fresh authentication — mark unlocked and clear the bypass flag.
                             isUnlocked = true
+                            bypassLock  = false
                             navController.navigate(AppRoute.MAIN_GRAPH) {
                                 popUpTo(AppRoute.AUTH_GRAPH) { inclusive = true }
                             }
@@ -119,6 +128,7 @@ fun AppNavigation(biometricsEnabled: Boolean = false) {
                     SignUpScreen(
                         onSignUpSuccess = {
                             isUnlocked = true
+                            bypassLock  = false
                             navController.navigate(AppRoute.MAIN_GRAPH) {
                                 popUpTo(AppRoute.AUTH_GRAPH) { inclusive = true }
                             }
@@ -141,7 +151,11 @@ fun AppNavigation(biometricsEnabled: Boolean = false) {
                 composable(AppRoute.ROUTE_MAIN_CONTENT) {
                     MainScreen(
                         onSignOut = {
+                            // Explicit logout (from the Profile page).
+                            // ProfileViewModel.logout() already signed out Firebase and cleared
+                            // the biometricsEnabled setting from DataStore; reset local state too.
                             isUnlocked = false
+                            bypassLock  = false
                             authViewModel.signOut()
                             navController.navigate(AppRoute.AUTH_GRAPH) {
                                 popUpTo(AppRoute.MAIN_GRAPH) { inclusive = true }
@@ -152,22 +166,13 @@ fun AppNavigation(biometricsEnabled: Boolean = false) {
             }
         }
 
-        // ── Biometric lock overlay — rendered on top of everything ─────────
+        // ── Biometric lock overlay ─────────────────────────────────────────
         AnimatedVisibility(
             visible = showLock,
             enter = fadeIn(),
             exit = fadeOut(),
         ) {
             BiometricLockScreen(
-                onUnlocked = { isUnlocked = true },
-                onUsePassword = {
-                    // Sign the user out so they must re-enter credentials.
-                    // isUnlocked stays false; after a fresh login onLoginSuccess sets it to true.
-                    authViewModel.signOut()
-                    navController.navigate(AppRoute.AUTH_GRAPH) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
                 onLaunchPrompt = {
                     BiometricHelper.authenticate(
                         activity = activity,
@@ -177,20 +182,29 @@ fun AppNavigation(biometricsEnabled: Boolean = false) {
                         onSuccess = { isUnlocked = true },
                     )
                 },
+                onUsePassword = {
+                    // ⚠️  Do NOT sign Firebase out here.
+                    // The session stays alive so the login screen's fingerprint button
+                    // will find isSignedIn() == true and can unlock without re-entering
+                    // credentials.  bypassLock hides this overlay while on the login screen.
+                    bypassLock = true
+                    navController.navigate(AppRoute.ROUTE_LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
             )
         }
     }
 }
 
-// ── Biometric lock screen ──────────────────────────────────────────────────
+// ── Biometric lock screen UI ──────────────────────────────────────────────────
 
 @Composable
 private fun BiometricLockScreen(
-    onUnlocked: () -> Unit,
-    onUsePassword: () -> Unit,
     onLaunchPrompt: () -> Unit,
+    onUsePassword: () -> Unit,
 ) {
-    // Automatically trigger the biometric prompt as soon as this screen appears.
+    // Auto-trigger the system fingerprint prompt when this screen first appears.
     LaunchedEffect(Unit) { onLaunchPrompt() }
 
     Surface(
@@ -202,7 +216,6 @@ private fun BiometricLockScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            // Fingerprint icon badge
             Box(
                 modifier = Modifier
                     .size(104.dp)
@@ -236,7 +249,6 @@ private fun BiometricLockScreen(
 
             Spacer(Modifier.height(32.dp))
 
-            // "Use Fingerprint" button — re-triggers the system prompt
             Button(
                 onClick = onLaunchPrompt,
                 modifier = Modifier.size(width = 220.dp, height = 52.dp),
@@ -256,7 +268,6 @@ private fun BiometricLockScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // Fall-back — signs the user out and returns to the login screen
             TextButton(onClick = onUsePassword) {
                 Text(
                     text = "Use Password Instead",
