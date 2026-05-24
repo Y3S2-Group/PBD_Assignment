@@ -2,6 +2,7 @@ package com.example.financeapp.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.financeapp.data.sync.FirestoreSyncService
 import com.example.financeapp.domain.model.User
 import com.example.financeapp.domain.repository.IAuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,6 +24,7 @@ sealed interface AuthUiState {
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepository: IAuthRepository,
+    private val syncService: FirestoreSyncService,
 ) : ViewModel() {
 
     val currentUser: StateFlow<User?> = authRepository.currentUser
@@ -63,8 +65,19 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Signs the current user out and immediately wipes the local Room cache.
+     *
+     * Clearing Room on sign-out is the second half of the session-isolation
+     * strategy (the first half is the clear at the start of [FirestoreSyncService.syncAll]).
+     * Without this call, the just-signed-out user's financial data would remain
+     * in Room's SQLite file on the device, visible to whoever signs in next.
+     */
     fun signOut() {
         viewModelScope.launch {
+            // Wipe local cache BEFORE navigating away so the auth screens
+            // never briefly show the previous user's data.
+            syncService.clearAllUserData()
             authRepository.signOut()
             _authUiState.value = AuthUiState.Idle
         }
