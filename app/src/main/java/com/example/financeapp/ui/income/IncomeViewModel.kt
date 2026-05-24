@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.financeapp.domain.model.Income
 import com.example.financeapp.domain.model.RecurringIncome
 import com.example.financeapp.domain.repository.IncomeRepository
+import com.example.financeapp.util.AppEventBus
+import com.example.financeapp.util.DataChangeEvent
 import com.example.financeapp.util.RecurringIncomeReminderService
 import com.example.financeapp.util.RecurringIncomeScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -59,6 +61,7 @@ data class AddIncomeRequest(
 class IncomeViewModel @Inject constructor(
     private val repository: IncomeRepository,
     @ApplicationContext private val appContext: Context,
+    private val eventBus: AppEventBus,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<IncomeUiState>(IncomeUiState.Loading)
@@ -128,6 +131,7 @@ class IncomeViewModel @Inject constructor(
             repository.insertIncome(income)
             cachedEntries = repository.getAllIncomes()
             updateForPeriod(cachedEntries)
+            eventBus.send(DataChangeEvent.INCOME)
         }
     }
 
@@ -152,6 +156,7 @@ class IncomeViewModel @Inject constructor(
             repository.updateIncome(income)
             cachedEntries = repository.getAllIncomes()
             updateForPeriod(cachedEntries)
+            eventBus.send(DataChangeEvent.INCOME)
         }
     }
 
@@ -160,6 +165,7 @@ class IncomeViewModel @Inject constructor(
             repository.deleteIncome(id)
             cachedEntries = repository.getAllIncomes()
             updateForPeriod(cachedEntries)
+            eventBus.send(DataChangeEvent.INCOME)
         }
     }
 

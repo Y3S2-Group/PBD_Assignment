@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.domain.model.Expense
 import com.example.financeapp.domain.repository.ExpenseRepository
+import com.example.financeapp.util.AppEventBus
+import com.example.financeapp.util.DataChangeEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExpenseViewModel @Inject constructor(
-    private val repository: ExpenseRepository
+    private val repository: ExpenseRepository,
+    private val eventBus: AppEventBus,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ExpenseUiState())
     val state: StateFlow<ExpenseUiState> = _state.asStateFlow()
@@ -28,6 +31,7 @@ class ExpenseViewModel @Inject constructor(
         viewModelScope.launch {
             repository.insertExpense(expense)
             refreshExpenses()
+            eventBus.send(DataChangeEvent.EXPENSE)
         }
     }
 

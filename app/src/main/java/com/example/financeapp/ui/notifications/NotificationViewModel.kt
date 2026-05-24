@@ -8,6 +8,7 @@ import com.example.financeapp.domain.model.Goal
 import com.example.financeapp.domain.repository.BudgetRepository
 import com.example.financeapp.domain.repository.ExpenseRepository
 import com.example.financeapp.domain.repository.IncomeRepository
+import com.example.financeapp.util.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.LocalDate
@@ -26,6 +27,7 @@ class NotificationViewModel @Inject constructor(
     private val expenseRepo: ExpenseRepository,
     private val incomeRepo: IncomeRepository,
     private val budgetRepo: BudgetRepository,
+    private val eventBus: AppEventBus,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
@@ -38,6 +40,10 @@ class NotificationViewModel @Inject constructor(
 
     init {
         refresh()
+        // Re-run whenever any data changes so notification list stays current
+        viewModelScope.launch {
+            eventBus.events.collect { refresh() }
+        }
     }
 
     fun refresh() {

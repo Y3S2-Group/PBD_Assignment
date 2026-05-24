@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.financeapp.domain.repository.BudgetRepository
 import com.example.financeapp.domain.repository.ExpenseRepository
 import com.example.financeapp.domain.repository.IncomeRepository
+import com.example.financeapp.util.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Instant
 import java.time.YearMonth
@@ -53,7 +54,8 @@ data class DashboardUiState(
 class DashboardViewModel @Inject constructor(
     private val incomeRepo: IncomeRepository,
     private val expenseRepo: ExpenseRepository,
-    private val budgetRepo: BudgetRepository
+    private val budgetRepo: BudgetRepository,
+    private val eventBus: AppEventBus,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DashboardUiState())
@@ -61,6 +63,10 @@ class DashboardViewModel @Inject constructor(
 
     init {
         refresh()
+        // Re-run refresh whenever income, expenses, or budget/goal data changes in any screen.
+        viewModelScope.launch {
+            eventBus.events.collect { refresh() }
+        }
     }
 
     fun refresh() {
