@@ -67,11 +67,16 @@ class DashboardViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            // Pull Firestore data into Room so the UI is up-to-date across devices.
+            // Sync FIRST, then render. syncAll() clears Room and repopulates it
+            // with only the current user's Firestore data. Calling refresh() before
+            // sync completes would read from a just-cleared (empty) Room and flash
+            // zeros on screen before the real data arrives.
             firebaseAuth.currentUser?.uid?.let { syncService.syncAll(it) }
+            // Now Room contains exactly this user's data — safe to render.
+            refresh()
         }
-        refresh()
-        // Re-run refresh whenever income, expenses, or budget/goal data changes in any screen.
+        // Re-run refresh whenever income, expenses, or budget/goal data changes
+        // in any other screen (add income, add expense, etc.).
         viewModelScope.launch {
             eventBus.events.collect { refresh() }
         }
