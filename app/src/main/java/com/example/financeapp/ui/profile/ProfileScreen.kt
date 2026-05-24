@@ -33,6 +33,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -46,6 +47,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -76,6 +78,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ProfileScreen(
     onLogout: () -> Unit,
+    onBack: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -95,6 +98,33 @@ fun ProfileScreen(
             .padding(bottom = 24.dp, top = 20.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clickable { onBack() }
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.ArrowBack,
+                        contentDescription = "Go back",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "Profile",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
         ProfileHeader(
             displayName = state.displayName,
             memberSinceLabel = formatMemberSince(state.memberSince),

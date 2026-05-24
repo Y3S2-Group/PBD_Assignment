@@ -64,6 +64,7 @@ import com.example.financeapp.ui.auth.AuthViewModel
 import com.example.financeapp.ui.components.GlobalTopAppBar
 import com.example.financeapp.ui.theme.AppTheme
 import com.example.financeapp.ui.dashboard.DashboardViewModel
+import com.example.financeapp.ui.notifications.NotificationViewModel
 import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.abs
@@ -83,8 +84,11 @@ fun DashboardScreen(
 ) {
     val authViewModel: AuthViewModel = hiltViewModel()
     val dashVm: DashboardViewModel = hiltViewModel()
+    val notifVm: NotificationViewModel = hiltViewModel()
     val currentUser by authViewModel.currentUser.collectAsState()
     val state by dashVm.state.collectAsState()
+    val notifState by notifVm.state.collectAsState()
+    val unreadCount = notifState.notifications.count { !it.isRead }
     val displayName = currentUser?.displayName.orEmpty()
     val email = currentUser?.email.orEmpty()
     val firstName = displayName.substringBefore(" ").ifBlank {
@@ -97,6 +101,7 @@ fun DashboardScreen(
             subtitle = "Hey $firstName,",
             healthScore = state.healthScore,
             avatarId = avatarId,
+            unreadCount = unreadCount,
             onProfileClick = onProfileClick,
             onNotificationClick = onNotificationClick,
         )

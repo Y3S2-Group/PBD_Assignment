@@ -116,7 +116,12 @@ fun MainScreen(
                     onNotificationClick = { navController.navigate(AppRoute.Notifications.route) }
                 )
             }
-            composable(AppRoute.Profile.route) { ProfileScreen(onLogout = onSignOut) }
+            composable(AppRoute.Profile.route) {
+                ProfileScreen(
+                    onLogout = onSignOut,
+                    onBack = { navController.navigateUp() },
+                )
+            }
             composable(AppRoute.Notifications.route) {
                 NotificationScreen(onNavigateBack = { navController.navigateUp() })
             }
