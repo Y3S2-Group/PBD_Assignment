@@ -22,6 +22,14 @@ class FirestoreExpenseRepository @Inject constructor(
                 .addOnFailureListener { cont.resumeWithException(it) }
         }
 
+    suspend fun deleteExpense(uid: String, expenseId: String): Unit =
+        suspendCancellableCoroutine { cont ->
+            expensesRef(uid).document(expenseId)
+                .delete()
+                .addOnSuccessListener { cont.resume(Unit) }
+                .addOnFailureListener { cont.resumeWithException(it) }
+        }
+
     suspend fun getAllExpenses(uid: String): List<Expense> =
         suspendCancellableCoroutine { cont ->
             expensesRef(uid).get()

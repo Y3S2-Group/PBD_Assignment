@@ -3,6 +3,7 @@ package com.example.financeapp.ui.expense
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,13 +21,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Commute
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DirectionsCar
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.LocalCafe
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Restaurant
@@ -36,6 +42,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -76,6 +84,11 @@ fun ExpenseScreen(
     val dashState by dashVm.state.collectAsState()
     var showQuickAdd by remember { mutableStateOf(false) }
 
+    // Auto-open overlay when edit state is set
+    if (state.expenseToEdit != null) {
+        showQuickAdd = true
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
         GlobalTopAppBar(
@@ -97,12 +110,21 @@ fun ExpenseScreen(
                     onCategorySelected = viewModel::setFilterCategory
                 )
             }
-            item { ExpenseActivityList(expenses = state.filteredExpenses) }
+            item {
+                ExpenseActivityList(
+                    expenses = state.filteredExpenses,
+                    onEdit = viewModel::setExpenseToEdit,
+                    onDelete = viewModel::deleteExpense
+                )
+            }
         }
         }
 
         FloatingActionButton(
-            onClick = { showQuickAdd = true },
+            onClick = {
+                viewModel.setExpenseToEdit(null)
+                showQuickAdd = true
+            },
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
             shape = RoundedCornerShape(20.dp),
@@ -116,18 +138,20 @@ fun ExpenseScreen(
 
         if (showQuickAdd) {
             QuickAddOverlay(
-                onDismiss = { showQuickAdd = false },
-                onSave = { amount, category ->
-                    val expense = Expense(
-                        id = "exp_${UUID.randomUUID()}",
+                onDismiss = {
+                    showQuickAdd = false
+                    viewModel.setExpenseToEdit(null)
+                },
+                expenseToEdit = state.expenseToEdit,
+                onSave = { amount, category, spendingType, paymentMethod ->
+                    viewModel.saveExpense(
                         amountLkr = amount,
                         category = category,
-                        spendingType = spendingTypeFor(category),
-                        paymentMethod = "Card",
-                        timestamp = System.currentTimeMillis()
+                        spendingType = spendingType,
+                        paymentMethod = paymentMethod
                     )
-                    viewModel.addExpense(expense)
                     showQuickAdd = false
+                    viewModel.setExpenseToEdit(null)
                 }
             )
         }
@@ -253,7 +277,11 @@ private fun FilterPill(
 }
 
 @Composable
-private fun ExpenseActivityList(expenses: List<Expense>) {
+private fun ExpenseActivityList(
+    expenses: List<Expense>,
+    onEdit: (Expense) -> Unit,
+    onDelete: (Expense) -> Unit
+) {
     Column(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -283,14 +311,22 @@ private fun ExpenseActivityList(expenses: List<Expense>) {
             )
         } else {
             expenses.take(5).forEach { expense ->
-                ExpenseItem(expense)
+                ExpenseItem(
+                    expense = expense,
+                    onEdit = { onEdit(expense) },
+                    onDelete = { onDelete(expense) }
+                )
             }
         }
     }
 }
 
 @Composable
-private fun ExpenseItem(expense: Expense) {
+private fun ExpenseItem(
+    expense: Expense,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -299,7 +335,7 @@ private fun ExpenseItem(expense: Expense) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -321,27 +357,63 @@ private fun ExpenseItem(expense: Expense) {
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = expense.paymentMethod,
+                    text = "${expense.spendingType} · ${expense.paymentMethod}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
-        Text(
-            text = "-LKR ${formatAmount(expense.amountLkr)}",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.tertiary
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "-LKR ${formatAmount(expense.amountLkr)}",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.tertiary
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Icon(
+                imageVector = Icons.Outlined.Edit,
+                contentDescription = "Edit",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable { onEdit() }
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Icon(
+                imageVector = Icons.Outlined.Delete,
+                contentDescription = "Delete",
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable { onDelete() }
+            )
+        }
     }
 }
 
 @Composable
 private fun QuickAddOverlay(
     onDismiss: () -> Unit,
-    onSave: (Double, String) -> Unit
+    expenseToEdit: Expense? = null,
+    onSave: (Double, String, String, String) -> Unit
 ) {
     var amountText by rememberSaveable { mutableStateOf("") }
     var selectedCategory by rememberSaveable { mutableStateOf("Food") }
+    var spendingType by rememberSaveable { mutableStateOf("DISCRETIONARY") }
+    var paymentMethod by rememberSaveable { mutableStateOf("Card") }
+
+    // Pre-fill if editing
+    androidx.compose.runtime.LaunchedEffect(expenseToEdit) {
+        if (expenseToEdit != null) {
+            amountText = if (expenseToEdit.amountLkr % 1.0 == 0.0)
+                expenseToEdit.amountLkr.toLong().toString()
+            else
+                expenseToEdit.amountLkr.toString()
+            selectedCategory = expenseToEdit.category
+            spendingType = expenseToEdit.spendingType
+            paymentMethod = expenseToEdit.paymentMethod
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -356,17 +428,19 @@ private fun QuickAddOverlay(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
+                .fillMaxHeight(0.9f)
                 .background(
-                    MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f),
+                    MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.95f),
                     RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
                 )
                 .clickable(
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }
                 ) {}
-                .padding(20.dp)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .verticalScroll(rememberScrollState())
                 .imePadding(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -374,7 +448,7 @@ private fun QuickAddOverlay(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Add Expense",
+                    text = if (expenseToEdit == null) "Add Expense" else "Edit Expense",
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -391,20 +465,86 @@ private fun QuickAddOverlay(
             }
 
             AmountDisplay(amountText)
-            CategoryGrid(
-                selectedCategory = selectedCategory,
-                onCategorySelected = { selectedCategory = it }
-            )
+
             QuickAddKeypad(
                 value = amountText,
                 onValueChange = { amountText = it }
             )
 
+            Text(
+                text = "Category",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            CategoryGrid(
+                selectedCategory = selectedCategory,
+                onCategorySelected = {
+                    selectedCategory = it
+                    if (expenseToEdit == null) {
+                        spendingType = spendingTypeFor(it)
+                    }
+                }
+            )
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Spending Type",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf("COMMITTED", "DISCRETIONARY").forEach { type ->
+                            FilterChip(
+                                selected = spendingType == type,
+                                onClick = { spendingType = type },
+                                label = {
+                                    Text(
+                                        text = if (type == "COMMITTED") "Comm." else "Disc.",
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                            )
+                        }
+                    }
+                }
+
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "Payment",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("Card", "Cash", "Wallet").forEach { method ->
+                            FilterChip(
+                                selected = paymentMethod.startsWith(method),
+                                onClick = {
+                                    paymentMethod = if (method == "Wallet") "Digital Wallet" else method
+                                },
+                                label = { Text(method, style = MaterialTheme.typography.labelSmall) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
             val amountValue = amountText.toDoubleOrNull()
             Button(
                 onClick = {
                     if (amountValue != null && amountValue > 0) {
-                        onSave(amountValue, selectedCategory)
+                        onSave(amountValue, selectedCategory, spendingType, paymentMethod)
                         amountText = ""
                     }
                 },
@@ -416,9 +556,14 @@ private fun QuickAddOverlay(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
+                    .padding(top = 8.dp)
             ) {
-                Text(text = "Save Expense", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = if (expenseToEdit == null) "Save Expense" else "Update Expense",
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
