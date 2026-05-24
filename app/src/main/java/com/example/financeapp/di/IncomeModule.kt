@@ -2,6 +2,7 @@ package com.example.financeapp.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.financeapp.data.local.AnalyticsDao
 import com.example.financeapp.data.local.IncomeDao
 import com.example.financeapp.data.local.IncomeDatabase
 import com.example.financeapp.data.local.ExpenseDao
@@ -33,7 +34,7 @@ abstract class IncomeModule {
                 IncomeDatabase::class.java,
                 "income.db"
             )
-                .fallbackToDestructiveMigration()
+                .fallbackToDestructiveMigration(false)
                 .build()
         }
 
@@ -42,5 +43,8 @@ abstract class IncomeModule {
 
         @Provides
         fun provideExpenseDao(database: IncomeDatabase): ExpenseDao = database.expenseDao()
+
+        @Provides
+        fun provideAnalyticsDao(database: IncomeDatabase): AnalyticsDao = database.analyticsDao()
     }
 }

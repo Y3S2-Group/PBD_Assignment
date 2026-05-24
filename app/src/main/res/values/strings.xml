@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">Finance App</string>
+    <string name="report_activity_title">Monthly Report</string>
+    <string name="analytics_channel_name">Analytics Insights</string>
+    <string name="analytics_notification_title">Finance insight</string>
+    <string name="analytics_notification_fallback">Your latest financial summary is ready.</string>
 </resources>
