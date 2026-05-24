@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.Lock
@@ -68,8 +69,11 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.financeapp.R
+import com.example.financeapp.util.BiometricHelper
+import com.example.financeapp.util.BiometricStatus
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.launch
@@ -78,6 +82,7 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onNavigateToSignUp: () -> Unit,
+    biometricsEnabled: Boolean = false,
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val authUiState by viewModel.authUiState.collectAsState()
@@ -361,6 +366,35 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                 )
 
+                // ── Fingerprint button (only when biometrics is set up) ────
+                val activity = context as FragmentActivity
+                val biometricStatus = remember { BiometricHelper.checkStatus(context) }
+                if (biometricsEnabled && biometricStatus == BiometricStatus.Available) {
+                    Spacer(Modifier.height(12.dp))
+                    SocialButton(
+                        label = "Use Fingerprint",
+                        leadingIcon = Icons.Outlined.Fingerprint,
+                        onClick = {
+                            BiometricHelper.authenticate(
+                                activity = activity,
+                                title = "Unlock Vault",
+                                subtitle = "Use your fingerprint to sign in",
+                                negativeButtonText = "Use Password",
+                                onSuccess = {
+                                    // Only navigate if Firebase session is still valid.
+                                    if (viewModel.isSignedIn()) onLoginSuccess()
+                                    else scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            "Session expired — please sign in with your credentials."
+                                        )
+                                    }
+                                },
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
                 Spacer(Modifier.height(28.dp))
 
                 // Sign up link
@@ -391,6 +425,7 @@ internal fun SocialButton(
     label: String,
     onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
+    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector? = null,
 ) {
     OutlinedButton(
         onClick = onClick,
@@ -404,6 +439,14 @@ internal fun SocialButton(
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
     ) {
+        if (leadingIcon != null) {
+            Icon(
+                imageVector = leadingIcon,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(Modifier.width(8.dp))
+        }
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,

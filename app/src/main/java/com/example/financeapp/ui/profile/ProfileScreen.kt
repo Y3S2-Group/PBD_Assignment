@@ -53,6 +53,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.fragment.app.FragmentActivity
+import com.example.financeapp.util.BiometricHelper
+import com.example.financeapp.util.BiometricStatus
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -75,8 +78,11 @@ fun ProfileScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val activity = context as FragmentActivity
     var showLanguagePicker by remember { mutableStateOf(false) }
     var showCurrencyPicker by remember { mutableStateOf(false) }
+    // Biometric capability dialog
+    var biometricDialogMessage by remember { mutableStateOf<String?>(null) }
     val languageLabel = languageLabelFor(state.language)
     val currencyLabel = state.currency.ifBlank { "LKR" }
     val photoPicker = rememberLauncherForActivityResult(
@@ -152,7 +158,37 @@ fun ProfileScreen(
                     label = "Biometrics",
                     icon = Icons.Outlined.Fingerprint,
                     checked = state.biometricsEnabled,
-                    onToggle = viewModel::setBiometricsEnabled
+                    onToggle = { enabling ->
+                        if (!enabling) {
+                            // Turning off — no check needed.
+                            viewModel.setBiometricsEnabled(false)
+                        } else {
+                            // Turning on — verify device capability first, then confirm
+                            // with a real fingerprint scan before persisting the setting.
+                            when (BiometricHelper.checkStatus(context)) {
+                                BiometricStatus.Available -> {
+                                    BiometricHelper.authenticate(
+                                        activity = activity,
+                                        title = "Enable Fingerprint Login",
+                                        subtitle = "Confirm your fingerprint to enable biometric unlock",
+                                        negativeButtonText = "Cancel",
+                                        onSuccess = { viewModel.setBiometricsEnabled(true) },
+                                    )
+                                }
+                                BiometricStatus.NotEnrolled -> {
+                                    biometricDialogMessage =
+                                        "No fingerprints are set up on this device.\n\n" +
+                                        "Go to Settings → Security → Fingerprint to add one, then try again."
+                                }
+                                BiometricStatus.NoHardware,
+                                BiometricStatus.Unavailable,
+                                -> {
+                                    biometricDialogMessage =
+                                        "This device does not support biometric authentication."
+                                }
+                            }
+                        }
+                    }
                 )
             )
         )
@@ -213,6 +249,20 @@ fun ProfileScreen(
                 viewModel.setCurrency(value)
                 showCurrencyPicker = false
             }
+        )
+    }
+
+    // Biometric unavailable info dialog
+    biometricDialogMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { biometricDialogMessage = null },
+            title = { Text("Biometrics Unavailable") },
+            text = { Text(message, style = MaterialTheme.typography.bodyMedium) },
+            confirmButton = {
+                TextButton(onClick = { biometricDialogMessage = null }) {
+                    Text("OK")
+                }
+            },
         )
     }
 }
