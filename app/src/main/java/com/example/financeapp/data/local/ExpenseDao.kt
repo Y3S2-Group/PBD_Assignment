@@ -29,4 +29,7 @@ interface ExpenseDao {
 
     @Query("SELECT category AS category, SUM(amountLkr) AS total FROM expenses WHERE timestamp BETWEEN :startInclusive AND :endInclusive GROUP BY category")
     suspend fun sumAmountLkrByCategoryBetween(startInclusive: Long, endInclusive: Long): List<ExpenseCategoryTotal>
+
+    @Query("SELECT SUM(amountLkr) FROM expenses WHERE spendingType = :spendingType AND timestamp BETWEEN :startInclusive AND :endInclusive")
+    suspend fun sumAmountLkrBySpendingTypeBetween(spendingType: String, startInclusive: Long, endInclusive: Long): Double?
 }
