@@ -44,6 +44,13 @@ class SettingsRepository @Inject constructor(
         dataStore.edit { it[Keys.LOCAL_PROFILE_PHOTO_PATH] = path }
     }
 
+    suspend fun clearUserScopedSettings() {
+        dataStore.edit {
+            it.remove(Keys.LOCAL_PROFILE_PHOTO_PATH)
+            it.remove(Keys.BIOMETRICS_ENABLED)
+        }
+    }
+
     private object Keys {
         val IS_DARK_MODE = booleanPreferencesKey("is_dark_mode")
         val LANGUAGE = stringPreferencesKey("language")
@@ -60,4 +67,3 @@ data class SettingsState(
     val biometricsEnabled: Boolean,
     val localProfilePhotoPath: String,
 )
-

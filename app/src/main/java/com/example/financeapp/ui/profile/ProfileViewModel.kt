@@ -102,7 +102,8 @@ class ProfileViewModel @Inject constructor(
 
     fun onProfilePhotoSelected(context: Context, uri: Uri) {
         viewModelScope.launch {
-            runCatching { LocalImageStorage.copyToInternalStorage(context, uri) }
+            val uid = state.value.uid
+            runCatching { LocalImageStorage.copyToInternalStorage(context, uri, uid) }
                 .onSuccess { path -> settingsRepository.setLocalProfilePhotoPath(path) }
                 .onFailure { error -> errorMessage.value = error.message ?: "Unable to save photo" }
         }
@@ -110,6 +111,7 @@ class ProfileViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
+            settingsRepository.clearUserScopedSettings()
             authRepository.signOut()
         }
     }

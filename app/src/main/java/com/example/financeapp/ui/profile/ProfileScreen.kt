@@ -44,9 +44,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,6 +75,10 @@ fun ProfileScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    var showLanguagePicker by remember { mutableStateOf(false) }
+    var showCurrencyPicker by remember { mutableStateOf(false) }
+    val languageLabel = languageLabelFor(state.language)
+    val currencyLabel = state.currency.ifBlank { "LKR" }
     val photoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri: Uri? ->
@@ -118,14 +127,14 @@ fun ProfileScreen(
                 SettingItem.Navigation(
                     label = "Language",
                     icon = Icons.Outlined.Language,
-                    value = state.language,
-                    onClick = { }
+                    value = languageLabel,
+                    onClick = { showLanguagePicker = true }
                 ),
                 SettingItem.Navigation(
                     label = "Currency",
                     icon = Icons.Outlined.Payments,
-                    value = state.currency,
-                    onClick = { }
+                    value = currencyLabel,
+                    onClick = { showCurrencyPicker = true }
                 )
             )
         )
@@ -170,6 +179,39 @@ fun ProfileScreen(
             onLogout = {
                 viewModel.logout()
                 onLogout()
+            }
+        )
+    }
+
+    if (showLanguagePicker) {
+        OptionPickerDialog(
+            title = "Select language",
+            options = listOf(
+                "English" to "en",
+                "Tamil" to "ta",
+                "Sinhala" to "si",
+            ),
+            selectedValue = state.language,
+            onDismiss = { showLanguagePicker = false },
+            onSelect = { value ->
+                viewModel.setLanguage(value)
+                showLanguagePicker = false
+            }
+        )
+    }
+
+    if (showCurrencyPicker) {
+        OptionPickerDialog(
+            title = "Select currency",
+            options = listOf(
+                "USD" to "USD",
+                "LKR" to "LKR",
+            ),
+            selectedValue = state.currency,
+            onDismiss = { showCurrencyPicker = false },
+            onSelect = { value ->
+                viewModel.setCurrency(value)
+                showCurrencyPicker = false
             }
         )
     }
@@ -450,4 +492,45 @@ private sealed class SettingItem(
         val checked: Boolean,
         val onToggle: (Boolean) -> Unit,
     ) : SettingItem(label, icon)
+}
+
+@Composable
+private fun OptionPickerDialog(
+    title: String,
+    options: List<Pair<String, String>>,
+    selectedValue: String,
+    onDismiss: () -> Unit,
+    onSelect: (String) -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = title) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                options.forEach { (label, value) ->
+                    TextButton(onClick = { onSelect(value) }, modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = if (value == selectedValue) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            }
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {},
+    )
+}
+
+private fun languageLabelFor(code: String): String {
+    return when (code.lowercase()) {
+        "ta" -> "Tamil"
+        "si" -> "Sinhala"
+        else -> "English"
+    }
 }
