@@ -7,6 +7,8 @@ import com.example.financeapp.domain.model.BudgetCategorySummary
 import com.example.financeapp.domain.model.Goal
 import com.example.financeapp.domain.model.SavingsDeposit
 import com.example.financeapp.domain.repository.BudgetRepository
+import com.example.financeapp.util.AppEventBus
+import com.example.financeapp.util.DataChangeEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Instant
 import java.time.YearMonth
@@ -25,7 +27,8 @@ enum class GoalStatus { ON_TRACK, AHEAD, BEHIND }
 
 @HiltViewModel
 class BudgetViewModel @Inject constructor(
-    private val repository: BudgetRepository
+    private val repository: BudgetRepository,
+    private val eventBus: AppEventBus,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BudgetUiState())
@@ -33,6 +36,15 @@ class BudgetViewModel @Inject constructor(
 
     init {
         refresh()
+        // Re-run when income or expense data changes (affects "actual spent" and income average)
+        viewModelScope.launch {
+            eventBus.events.collect { event ->
+                when (event) {
+                    DataChangeEvent.INCOME, DataChangeEvent.EXPENSE -> refresh()
+                    else -> Unit
+                }
+            }
+        }
     }
 
     fun refresh(monthYear: String = currentMonthYear()) {
@@ -99,6 +111,7 @@ class BudgetViewModel @Inject constructor(
             )
             repository.upsertGoal(goal)
             refresh()
+            eventBus.send(DataChangeEvent.BUDGET_GOAL)
         }
     }
 
@@ -116,6 +129,7 @@ class BudgetViewModel @Inject constructor(
                 )
             )
             refresh()
+            eventBus.send(DataChangeEvent.BUDGET_GOAL)
         }
     }
 
@@ -135,6 +149,7 @@ class BudgetViewModel @Inject constructor(
             repository.insertDeposit(deposit)
             repository.updateGoalSavings(currentGoal.id, currentGoal.currentSavings + amount)
             refresh()
+            eventBus.send(DataChangeEvent.BUDGET_GOAL)
         }
     }
 
@@ -150,6 +165,7 @@ class BudgetViewModel @Inject constructor(
                 )
             )
             refresh(monthYear)
+            eventBus.send(DataChangeEvent.BUDGET_GOAL)
         }
     }
 
