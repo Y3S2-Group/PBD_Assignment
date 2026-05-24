@@ -26,6 +26,24 @@ class ExpenseRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateExpense(expense: Expense) {
+        withContext(Dispatchers.IO) {
+            expenseDao.update(expense)
+            uid?.let { id ->
+                try { firestoreRepo.saveExpense(id, expense) } catch (e: Exception) { /* offline */ }
+            }
+        }
+    }
+
+    override suspend fun deleteExpense(expense: Expense) {
+        withContext(Dispatchers.IO) {
+            expenseDao.delete(expense)
+            uid?.let { id ->
+                try { firestoreRepo.deleteExpense(id, expense.id) } catch (e: Exception) { /* offline */ }
+            }
+        }
+    }
+
     override suspend fun getAllExpenses(): List<Expense> = withContext(Dispatchers.IO) {
         expenseDao.getAll()
     }
