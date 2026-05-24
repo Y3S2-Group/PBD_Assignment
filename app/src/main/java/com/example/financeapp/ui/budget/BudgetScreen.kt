@@ -35,7 +35,6 @@ import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.material.icons.rounded.LocalCafe
 import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material.icons.rounded.MoreHoriz
-import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.ShoppingBag
 import androidx.compose.material.icons.rounded.Subscriptions
@@ -84,6 +83,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.financeapp.domain.model.BudgetCategorySummary
 import com.example.financeapp.domain.model.Goal
+import com.example.financeapp.ui.components.GlobalTopAppBar
 import java.text.NumberFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -96,7 +96,11 @@ private val BUDGET_CATEGORIES = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BudgetScreen(viewModel: BudgetViewModel = hiltViewModel()) {
+fun BudgetScreen(
+    onProfileClick: () -> Unit = {},
+    onNotificationClick: () -> Unit = {},
+    viewModel: BudgetViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsState()
     val scrollState = rememberScrollState()
 
@@ -134,7 +138,14 @@ fun BudgetScreen(viewModel: BudgetViewModel = hiltViewModel()) {
             .padding(bottom = 120.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        BudgetTopBar(onNewGoal = { showCreateGoalDialog = true })
+        GlobalTopAppBar(
+            title = "Budget",
+            subtitle = null,
+            healthScore = 85,
+            localProfilePhotoPath = null,
+            onProfileClick = onProfileClick,
+            onNotificationClick = onNotificationClick,
+        )
 
         if (goal != null) {
             SavingsGoalCard(
@@ -250,58 +261,6 @@ fun BudgetScreen(viewModel: BudgetViewModel = hiltViewModel()) {
     }
 }
 
-@Composable
-private fun BudgetTopBar(onNewGoal: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Surface(
-                modifier = Modifier.size(40.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {}
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = "Vault",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Surface(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clickable(onClick = onNewGoal),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Rounded.Add,
-                        contentDescription = "New Goal",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
-            Surface(
-                modifier = Modifier.size(44.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Rounded.Notifications,
-                        contentDescription = "Notifications",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun SavingsGoalCard(

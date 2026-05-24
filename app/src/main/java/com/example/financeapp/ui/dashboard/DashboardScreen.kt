@@ -33,7 +33,6 @@ import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Lightbulb
-import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.RocketLaunch
 import androidx.compose.material.icons.rounded.Savings
 import androidx.compose.material.icons.rounded.Warning
@@ -62,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.financeapp.ui.auth.AuthViewModel
+import com.example.financeapp.ui.components.GlobalTopAppBar
 import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.abs
@@ -74,11 +74,19 @@ private val CATEGORY_PALETTE = listOf(
 )
 
 @Composable
-fun DashboardScreen(onProfileClick: () -> Unit = {}) {
+fun DashboardScreen(
+    onProfileClick: () -> Unit = {},
+    onNotificationClick: () -> Unit = {},
+) {
     val authViewModel: AuthViewModel = hiltViewModel()
     val dashVm: DashboardViewModel = hiltViewModel()
     val currentUser by authViewModel.currentUser.collectAsState()
     val state by dashVm.state.collectAsState()
+    val displayName = currentUser?.displayName.orEmpty()
+    val email = currentUser?.email.orEmpty()
+    val firstName = displayName.substringBefore(" ").ifBlank {
+        email.substringBefore("@").ifBlank { "User" }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -88,11 +96,13 @@ fun DashboardScreen(onProfileClick: () -> Unit = {}) {
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 120.dp)
         ) {
-            FinancialHealthHeader(
-                displayName = currentUser?.displayName ?: "",
-                userEmail = currentUser?.email ?: "",
+            GlobalTopAppBar(
+                title = "Financial Mastery",
+                subtitle = "Hey $firstName,",
                 healthScore = state.healthScore,
-                onProfileClick = onProfileClick
+                localProfilePhotoPath = null,
+                onProfileClick = onProfileClick,
+                onNotificationClick = onNotificationClick,
             )
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -132,104 +142,6 @@ fun DashboardScreen(onProfileClick: () -> Unit = {}) {
     }
 }
 
-// ─── Header ───────────────────────────────────────────────────────────────────
-
-@Composable
-private fun FinancialHealthHeader(
-    displayName: String,
-    userEmail: String,
-    healthScore: Int,
-    onProfileClick: () -> Unit
-) {
-    val firstName = displayName.substringBefore(" ").ifBlank { "there" }
-    val initials = displayName.firstOrNull()?.uppercaseChar()?.toString()
-        ?: userEmail.firstOrNull()?.uppercaseChar()?.toString()
-        ?: "U"
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp, bottom = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Surface(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clickable { onProfileClick() },
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        text = initials,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = "Hey $firstName,",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "Financial Mastery",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            HealthScoreBadge(score = healthScore)
-            Spacer(modifier = Modifier.width(8.dp))
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier.size(40.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Rounded.Notifications,
-                        contentDescription = "Notifications",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-        }
-    }
-}
-
-// FR7 — health score ring badge
-@Composable
-private fun HealthScoreBadge(score: Int) {
-    val animatedScore by animateFloatAsState(
-        targetValue = score / 100f,
-        animationSpec = tween(900),
-        label = "healthScore"
-    )
-    val ringColor = when {
-        score >= 70 -> MaterialTheme.colorScheme.secondary
-        score >= 40 -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.error
-    }
-    Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-        CircularProgressRing(
-            progress = animatedScore,
-            strokeWidth = 4.dp,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant,
-            progressColor = ringColor
-        )
-        Text(
-            text = score.toString(),
-            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
 
 // ─── FR1 Balance cards ────────────────────────────────────────────────────────
 

@@ -28,7 +28,6 @@ import androidx.compose.material.icons.outlined.Commute
 import androidx.compose.material.icons.outlined.DirectionsCar
 import androidx.compose.material.icons.outlined.LocalCafe
 import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material.icons.outlined.Subscriptions
@@ -59,12 +58,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.financeapp.domain.model.Expense
+import com.example.financeapp.ui.components.GlobalTopAppBar
 import java.text.NumberFormat
 import java.util.Locale
 import java.util.UUID
 
 @Composable
-fun ExpenseScreen(viewModel: ExpenseViewModel = hiltViewModel()) {
+fun ExpenseScreen(
+    onProfileClick: () -> Unit = {},
+    onNotificationClick: () -> Unit = {},
+    viewModel: ExpenseViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsState()
     var showQuickAdd by remember { mutableStateOf(false) }
 
@@ -73,7 +77,16 @@ fun ExpenseScreen(viewModel: ExpenseViewModel = hiltViewModel()) {
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 120.dp)
         ) {
-            item { ExpenseTopBar() }
+            item {
+                GlobalTopAppBar(
+                    title = "Expenses",
+                    subtitle = null,
+                    healthScore = 85,
+                    localProfilePhotoPath = null,
+                    onProfileClick = onProfileClick,
+                    onNotificationClick = onNotificationClick,
+                )
+            }
             item { ExpenseSummaryCard(totalSpent = state.expenses.sumOf { it.amountLkr }) }
             item {
                 CategoryFilterRow(
@@ -117,38 +130,6 @@ fun ExpenseScreen(viewModel: ExpenseViewModel = hiltViewModel()) {
     }
 }
 
-@Composable
-private fun ExpenseTopBar() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
-                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), CircleShape)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = "Financial Mastery",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Icon(
-            imageVector = Icons.Outlined.Notifications,
-            contentDescription = "Notifications",
-            tint = MaterialTheme.colorScheme.primary
-        )
-    }
-}
 
 @Composable
 private fun ExpenseSummaryCard(totalSpent: Double) {

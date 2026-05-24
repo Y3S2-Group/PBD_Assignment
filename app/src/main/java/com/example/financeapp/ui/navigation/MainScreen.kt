@@ -21,6 +21,7 @@ import com.example.financeapp.ui.budget.BudgetScreen
 import com.example.financeapp.ui.dashboard.DashboardScreen
 import com.example.financeapp.ui.expense.ExpenseScreen
 import com.example.financeapp.ui.income.IncomeScreen
+import com.example.financeapp.ui.notifications.NotificationScreen
 import com.example.financeapp.ui.profile.ProfileScreen
 
 @Composable
@@ -28,11 +29,13 @@ fun MainScreen(onSignOut: () -> Unit = {}) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
-    val isProfileRoute = currentDestination?.hierarchy?.any { it.route == AppRoute.Profile.route } == true
+    val hideBottomBar = currentDestination?.hierarchy?.any {
+        it.route == AppRoute.Profile.route || it.route == AppRoute.Notifications.route
+    } == true
 
     Scaffold(
         bottomBar = {
-            if (!isProfileRoute) {
+            if (!hideBottomBar) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f)
                 ) {
@@ -82,12 +85,33 @@ fun MainScreen(onSignOut: () -> Unit = {}) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(AppRoute.Dashboard.route) {
-                DashboardScreen(onProfileClick = { navController.navigate(AppRoute.Profile.route) })
+                DashboardScreen(
+                    onProfileClick = { navController.navigate(AppRoute.Profile.route) },
+                    onNotificationClick = { navController.navigate(AppRoute.Notifications.route) }
+                )
             }
-            composable(AppRoute.Income.route) { IncomeScreen() }
-            composable(AppRoute.Expenses.route) { ExpenseScreen() }
-            composable(AppRoute.Budget.route) { BudgetScreen() }
+            composable(AppRoute.Income.route) {
+                IncomeScreen(
+                    onProfileClick = { navController.navigate(AppRoute.Profile.route) },
+                    onNotificationClick = { navController.navigate(AppRoute.Notifications.route) }
+                )
+            }
+            composable(AppRoute.Expenses.route) {
+                ExpenseScreen(
+                    onProfileClick = { navController.navigate(AppRoute.Profile.route) },
+                    onNotificationClick = { navController.navigate(AppRoute.Notifications.route) }
+                )
+            }
+            composable(AppRoute.Budget.route) {
+                BudgetScreen(
+                    onProfileClick = { navController.navigate(AppRoute.Profile.route) },
+                    onNotificationClick = { navController.navigate(AppRoute.Notifications.route) }
+                )
+            }
             composable(AppRoute.Profile.route) { ProfileScreen(onLogout = onSignOut) }
+            composable(AppRoute.Notifications.route) {
+                NotificationScreen(onNavigateBack = { navController.navigateUp() })
+            }
         }
     }
 }
