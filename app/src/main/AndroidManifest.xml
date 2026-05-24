@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".FinanceApp"
@@ -14,15 +16,31 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.FinanceApp">
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Recurring income reminder service (Hilt-injected) -->
+        <service
+            android:name=".util.RecurringIncomeReminderService"
+            android:exported="false" />
+
+        <!-- BroadcastReceiver for AlarmManager alarms and BOOT_COMPLETED -->
+        <receiver
+            android:name=".util.RecurringIncomeReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.financeapp.ACTION_RECURRING_INCOME_DUE" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>
