@@ -27,8 +27,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.rounded.Security
-import androidx.compose.material.icons.rounded.TrendingUp
-import androidx.compose.material.icons.rounded.VerifiedUser
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -43,7 +41,6 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -192,28 +189,9 @@ fun WelcomeScreen(
                     modifier = Modifier.padding(horizontal = 8.dp),
                 )
 
-                Spacer(Modifier.height(32.dp))
-
-                // Security badges
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    SecurityBadge(
-                        icon = Icons.Rounded.VerifiedUser,
-                        text = "256-bit AES",
-                        tint = secondaryColor,
-                        modifier = Modifier.weight(1f),
-                    )
-                    SecurityBadge(
-                        icon = Icons.Rounded.TrendingUp,
-                        text = "Live Alpha",
-                        tint = primaryColor,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
             }
 
+            
             // ── Actions ───────────────────────────────────────────────
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -266,40 +244,3 @@ fun WelcomeScreen(
     }
 }
 
-@Composable
-private fun SecurityBadge(
-    icon: ImageVector,
-    text: String,
-    tint: Color,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f))
-            .border(1.dp, Color.White.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(tint.copy(alpha = 0.2f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = tint,
-                modifier = Modifier.size(16.dp),
-            )
-        }
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-    }
-}

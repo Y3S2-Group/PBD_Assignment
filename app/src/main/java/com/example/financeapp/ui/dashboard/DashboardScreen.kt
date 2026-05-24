@@ -97,7 +97,7 @@ fun DashboardScreen(
                 .padding(bottom = 120.dp)
         ) {
             GlobalTopAppBar(
-                title = "Financial Mastery",
+                title = "Vault",
                 subtitle = "Hey $firstName,",
                 healthScore = state.healthScore,
                 localProfilePhotoPath = null,

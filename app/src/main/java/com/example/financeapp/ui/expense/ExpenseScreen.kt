@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.financeapp.domain.model.Expense
 import com.example.financeapp.ui.components.GlobalTopAppBar
+import com.example.financeapp.ui.dashboard.DashboardViewModel
 import java.text.NumberFormat
 import java.util.Locale
 import java.util.UUID
@@ -70,6 +71,8 @@ fun ExpenseScreen(
     viewModel: ExpenseViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val dashVm: DashboardViewModel = hiltViewModel()
+    val dashState by dashVm.state.collectAsState()
     var showQuickAdd by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -81,7 +84,7 @@ fun ExpenseScreen(
                 GlobalTopAppBar(
                     title = "Expenses",
                     subtitle = null,
-                    healthScore = 85,
+                    healthScore = dashState.healthScore,
                     localProfilePhotoPath = null,
                     onProfileClick = onProfileClick,
                     onNotificationClick = onNotificationClick,

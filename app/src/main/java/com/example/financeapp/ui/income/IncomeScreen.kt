@@ -86,6 +86,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.financeapp.domain.model.Income
 import com.example.financeapp.domain.model.RecurringIncome
 import com.example.financeapp.ui.components.GlobalTopAppBar
+import com.example.financeapp.ui.dashboard.DashboardViewModel
 import java.text.NumberFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -101,6 +102,8 @@ fun IncomeScreen(
     viewModel: IncomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val dashVm: DashboardViewModel = hiltViewModel()
+    val dashState by dashVm.state.collectAsState()
     val totalLkr by viewModel.totalLkr.collectAsState()
     val sourceBreakdown by viewModel.sourceBreakdown.collectAsState()
     val selectedPeriod by viewModel.selectedPeriod.collectAsState()
@@ -127,7 +130,7 @@ fun IncomeScreen(
                 GlobalTopAppBar(
                     title = "Income",
                     subtitle = null,
-                    healthScore = 85,
+                    healthScore = dashState.healthScore,
                     localProfilePhotoPath = null,
                     onProfileClick = onProfileClick,
                     onNotificationClick = onNotificationClick,
