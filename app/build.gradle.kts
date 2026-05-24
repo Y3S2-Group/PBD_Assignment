@@ -92,6 +92,10 @@ dependencies {
     implementation("androidx.credentials:credentials:1.3.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    // Biometric authentication (stable).
+    // biometric:1.1.0 transitively pulls in androidx.fragment:fragment, which gives us
+    // FragmentActivity — the type BiometricPrompt requires.
+    implementation("androidx.biometric:biometric:1.1.0")
 }
 
 kapt {

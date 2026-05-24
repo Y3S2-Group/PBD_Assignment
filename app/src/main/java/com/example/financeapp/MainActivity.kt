@@ -1,9 +1,9 @@
 package com.example.financeapp
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.fragment.app.FragmentActivity
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.example.financeapp.data.local.SettingsRepository
@@ -14,7 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     @Inject
     lateinit var settingsRepository: SettingsRepository
 
@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
                 )
             )
             AppTheme(darkTheme = settings.isDarkMode) {
-                AppNavigation()
+                AppNavigation(biometricsEnabled = settings.biometricsEnabled)
             }
         }
     }
